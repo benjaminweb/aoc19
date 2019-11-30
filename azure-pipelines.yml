@@ -8,7 +8,8 @@
 # Copy these contents into the root directory of your Github project in a file
 # named azure-pipelines.yml
 
-STACK_CACHE_FOLDER: $(Pipeline.Workspace)/.stack
+variables:
+  STACK_CACHE_FOLDER: $(Pipeline.Workspace)/.stack
 
 # Choose a agent virtual image
 pool:
