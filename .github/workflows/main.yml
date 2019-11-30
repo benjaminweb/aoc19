@@ -1,0 +1,31 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Cache stack
+      with:
+        path: /home/runner/.stack
+        key: ${{ runner.OS }}-build-${{ hashFiles('**/stack.yaml') }}-${{ hashFiles('**/package.yaml') }}
+        restore-keys: |
+          ${{ runner.OS }}-build-${{ env.cache-name }}-
+          ${{ runner.OS }}-build-
+          ${{ runner.OS }}-
+    - name: Install stack
+      run: |
+            mkdir -p ~/.local/bin
+            url -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+    - name: Build dependencies
+      run: |
+            export PATH=$HOME/.local/bin:$PATH
+            stack --no-terminal --install-ghc test --only-dependencies
+    - name: Test package
+      run: |
+            export PATH=$HOME/.local/bin:$PATH
+            stack test --haddock --no-haddock-deps
