@@ -9,7 +9,7 @@
 # named azure-pipelines.yml
 
 variables:
-  STACK_CACHE_FOLDER: $(Build.SourcesDirectory)/.stack
+  STACK_WORK_CACHE_FOLDER: $(Build.SourcesDirectory)/.stack-work
 
 # Choose a agent virtual image
 pool:
@@ -19,9 +19,9 @@ steps:
 - task: Cache@2
   inputs:
     key: 'stack | "$(Agent.OS)" | package.yaml | stack.yaml'
-    path: $(STACK_CACHE_FOLDER)
+    path: $(STACK_WORK_CACHE_FOLDER)
     restoreKeys: 'stack | "$(AGENT.OS)"'
-  displayName: Cache .stack
+  displayName: Cache .stack-work
 
 
 - script: |
