@@ -10,6 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Cache stack
+      uses: actions/cache@v1
       with:
         path: /home/runner/.stack
         key: ${{ runner.OS }}-build-${{ hashFiles('**/stack.yaml') }}-${{ hashFiles('**/package.yaml') }}
