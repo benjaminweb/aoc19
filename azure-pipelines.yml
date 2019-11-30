@@ -8,11 +8,19 @@
 # Copy these contents into the root directory of your Github project in a file
 # named azure-pipelines.yml
 
+STACK_CACHE_FOLDER: $(Pipeline.Workspace)/.stack
+
 # Choose a agent virtual image
 pool:
   vmImage: ubuntu-16.04
 
 steps:
+- task: Cache@2
+  inputs:
+    key: '.stack'
+    restoreKeys: '.stack'
+    path: $(STACK_CACHE_FOLDER)
+
 - script: |
     mkdir -p ~/.local/bin
     curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
