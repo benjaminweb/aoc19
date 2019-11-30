@@ -18,10 +18,10 @@ pool:
 steps:
 - task: Cache@2
   inputs:
-    key: 'stack | "$(Agent.OS)" | package.yaml | stack.yaml'
+    key: 'clear_cache | stack | "$(Agent.OS)" | package.yaml | stack.yaml'
     path: $(STACK_CACHE_FOLDER)
     restoreKeys: 'stack | "$(AGENT.OS)"'
-  displayName: Cache .stack-work
+  displayName: Cache .stack
 
 
 - script: |
