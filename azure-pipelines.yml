@@ -9,7 +9,7 @@
 # named azure-pipelines.yml
 
 variables:
-  STACK_CACHE_FOLDER: $(Pipeline.Workspace)/.stack
+  STACK_CACHE_FOLDER: $(Build.SourcesDirectory)/.stack
 
 # Choose a agent virtual image
 pool:
