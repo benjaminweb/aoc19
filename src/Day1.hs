@@ -36,9 +36,4 @@ totalFuelRequirement = sum . map (uncurry (+) . (\x -> (startFuelRequired x, fue
 -- >>> fuelForFuelForMass 100756
 -- 16763
 fuelForFuelForMass :: Mass -> Fuel
-fuelForFuelForMass mass = go firstAdditionalFuel []
-  where
-    go x acc
-      | x <= 0 = sum acc
-      | otherwise = go (startFuelRequired x) $ acc ++ [x]
-    firstAdditionalFuel = startFuelRequired $ startFuelRequired mass
+fuelForFuelForMass = sum . takeWhile (>= 0) . drop 2 . iterate startFuelRequired
