@@ -8,7 +8,7 @@ type Mass = Int
 type Fuel = Int
 
 getInput :: FilePath -> IO [Mass]
-getInput path = map fst . mapMaybe BS8.readInt . BS8.lines <$> BS8.readFile path
+getInput = (map fst . mapMaybe BS8.readInt . BS8.lines <$>) . BS8.readFile
 
 -- | Calculates the fuel of a module given its mass.
 --
