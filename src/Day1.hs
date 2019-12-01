@@ -8,7 +8,7 @@ type Mass = Int
 type Fuel = Int
 
 getInput :: FilePath -> IO [Mass]
-getInput path = (map fst . mapMaybe BS8.readInt . BS8.lines) <$> BS8.readFile path
+getInput path = map fst . mapMaybe BS8.readInt . BS8.lines <$> BS8.readFile path
 
 -- | Calculates the fuel of a module given its mass.
 --
@@ -25,7 +25,7 @@ startFuelRequired = (+ (-2)) . (`div` 3)
 
 -- | Calculates the sum of fuel requirements for all modules given their mass.
 totalFuelRequirement :: [Mass] -> Fuel
-totalFuelRequirement = sum . map (uncurry (+) .(\x -> (startFuelRequired x, fuelForFuelForMass x)))
+totalFuelRequirement = sum . map (uncurry (+) . (\x -> (startFuelRequired x, fuelForFuelForMass x)))
 
 -- | Determine for a given mass required fuel for fuel.
 --
