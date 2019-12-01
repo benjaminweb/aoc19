@@ -7,4 +7,4 @@ main = hspec
   $ it "calculates totalFuelRequirement correctly"
   $ do
     result <- Day1.totalFuelRequirement <$> Day1.getInput "inputs/1.1.txt"
-    result `shouldBe` 3282386
+    result `shouldBe` 4920708

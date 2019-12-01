@@ -25,4 +25,20 @@ startFuelRequired = (+ (-2)) . (`div` 3)
 
 -- | Calculates the sum of fuel requirements for all modules given their mass.
 totalFuelRequirement :: [Mass] -> Fuel
-totalFuelRequirement = sum . map startFuelRequired
+totalFuelRequirement = sum . map (uncurry (+) .(\x -> (startFuelRequired x, fuelForFuelForMass x)))
+
+-- | Determine for a given mass required fuel for fuel.
+--
+-- >>> fuelForFuelForMass 14
+-- 0
+-- >>> fuelForFuelForMass 1969
+-- 312
+-- >>> fuelForFuelForMass 100756
+-- 16763
+fuelForFuelForMass :: Mass -> Fuel
+fuelForFuelForMass mass = go firstAdditionalFuel []
+  where
+    go x acc
+      | x <= 0 = sum acc
+      | otherwise = go (startFuelRequired x) $ acc ++ [x]
+    firstAdditionalFuel = startFuelRequired $ startFuelRequired mass
