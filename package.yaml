@@ -2,7 +2,7 @@ name:                aoc19
 version:             0.1.0.0
 github:              "benjaminweb/aoc19"
 license:             BSD3
-author:              "Author name here"
+author:              "Benjamin Weber"
 maintainer:          "mail@bwe.im"
 copyright:           "2019 Benjamin Weber"
 
