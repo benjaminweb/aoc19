@@ -21,20 +21,12 @@ description: "See README.md"
 
 dependencies:
 - base >= 4.7 && < 5
+- bytestring
 
 library:
   source-dirs: src
-
-executables:
-  aoc19-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - aoc19
+  exposed-modules:
+    - Day1
 
 tests:
   doctest:
