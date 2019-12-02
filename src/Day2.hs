@@ -8,6 +8,9 @@ import qualified Data.ByteString.Char8 as B8
 import Data.Foldable (foldl')
 import Data.List.Split (divvy, splitOn)
 import Data.Maybe (listToMaybe, mapMaybe)
+import Optics.At.Core (ix)
+import Optics.Operators ((.~))
+import Optics.Optic ((&))
 
 getInput :: FilePath -> IO [Int]
 getInput = (map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B8.readFile
@@ -55,21 +58,10 @@ parse (done, todo@(x : _)) = parse (done ++ [moving], remaining)
     moving = take (parametricity x) todo
     remaining = drop (parametricity x) todo
 
--- | Convert four integers to Just Operator, Nothing otherwise.
---
--- | Overwrite pos in acc with value x.
---
--- >>> saveResult [1,2,3] 0 99
--- [99,2,3]
--- >>> saveResult [1,2,3] 1 99
--- [1,99,3]
-saveResult :: [Int] -> Int -> Int -> [Int]
-saveResult acc pos x = take pos acc ++ [x] ++ drop (pos + 1) acc
-
 execInstruction :: (Int, [Int]) -> Instruction -> (Int, [Int])
 execInstruction (c, xs) Instruction {..} = case iOp of
-  Add -> (c + 1 + 3, saveResult xs iStoragePos $ uncurry (+) getPosPair)
-  Mul -> (c + 1 + 3, saveResult xs iStoragePos $ uncurry (*) getPosPair)
+  Add -> (c + 1 + 3, xs & ix iStoragePos .~ uncurry (+) getPosPair)
+  Mul -> (c + 1 + 3, xs & ix iStoragePos .~ uncurry (*) getPosPair)
   where
     getPos x = xs !! max 0 x
     getPosPair = (getPos iSrcPos1, getPos iSrcPos2)
@@ -87,14 +79,14 @@ execInstruction (c, xs) Instruction {..} = case iOp of
 umbrella :: (Int, [Int]) -> (Int, [Int])
 umbrella (c, xs) =
   case nextInstruction (drop c xs) of
-    Just istr@(Instruction {}) -> umbrella $ execInstruction (c, xs) istr
+    Just istr@Instruction {} -> umbrella $ execInstruction (c, xs) istr
     Just Terminate -> (c, xs)
 
 nextInstruction :: [Int] -> Maybe Instruction
 nextInstruction = listToMaybe . map toInstruction . fst . parse . (,) []
 
 prepare :: [Int] -> [Int]
-prepare xs = saveResult (saveResult xs 1 12) 2 2
+prepare xs = xs & ix 1 .~ 12 & ix 2 .~ 2
 
 intCode :: [Int] -> Int
 intCode = head . snd . umbrella . (,) 0 . prepare

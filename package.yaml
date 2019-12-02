@@ -24,6 +24,8 @@ dependencies:
 - bytestring
 - split
 - text
+- optics
+- optics-core
 
 library:
   source-dirs: src
