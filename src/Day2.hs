@@ -1,5 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
+-- FIXME: error handling, if invalid OpCode
+
 module Day2 where
 
 import qualified Data.ByteString.Char8 as B8
@@ -75,7 +77,7 @@ getOperation n xs = toOperation (divvy 4 4 xs !! max 0 n)
 -- >>> go [1,1,1,4,99,5,6,0,99]
 -- [30,1,1,4,2,5,6,0,99]
 go :: [Int] -> [Int]
-go xs = snd . last . take (limit + 1) . iterate execOp . (,) 0
+go xs = snd . last . take (limit + 1) . iterate execOp . (,) 0 $ xs
   where
     limit = div (length xs) 4
 
