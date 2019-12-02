@@ -26,6 +26,7 @@ dependencies:
 - text
 - optics
 - optics-core
+- containers
 
 library:
   source-dirs: src
