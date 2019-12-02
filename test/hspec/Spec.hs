@@ -13,5 +13,5 @@ main = hspec $
     describe "Day 2.1"
       $ it "Intcode program is working"
       $ do
-        result <- Day2.intCode <$> Day2.getInput "inputs/2.txt"
+        result <- Day2.intCode (Day2.prepare 12 2) <$> Day2.getInput "inputs/2.txt"
         result `shouldBe` 5866714

@@ -85,8 +85,8 @@ umbrella (c, xs) =
 nextInstruction :: [Int] -> Maybe Instruction
 nextInstruction = listToMaybe . map toInstruction . fst . parse . (,) []
 
-prepare :: [Int] -> [Int]
-prepare xs = xs & ix 1 .~ 12 & ix 2 .~ 2
+prepare :: Int -> Int -> [Int] -> [Int]
+prepare first second xs = xs & ix 1 .~ first & ix 2 .~ second
 
-intCode :: [Int] -> Int
-intCode = head . snd . umbrella . (,) 0 . prepare
+intCode :: ([Int] -> [Int]) -> [Int] -> Int
+intCode preparer = head . snd . umbrella . (,) 0 . preparer
