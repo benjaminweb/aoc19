@@ -90,3 +90,9 @@ prepare first second xs = xs & ix 1 .~ first & ix 2 .~ second
 
 intCode :: ([Int] -> [Int]) -> [Int] -> Int
 intCode preparer = head . snd . umbrella . (,) 0 . preparer
+
+findPair :: [Int] -> Int -> Maybe (Int, Int)
+findPair is z = listToMaybe [(x,y) | x <- [0..99], y <- [0..99], intCode (prepare x y) is == z]
+
+formatPair :: Int -> Int -> Int
+formatPair noun verb = 100 * noun + verb
