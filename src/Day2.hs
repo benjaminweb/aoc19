@@ -7,38 +7,56 @@ module Day2 where
 import qualified Data.ByteString.Char8 as B8
 import Data.Foldable (foldl')
 import Data.List.Split (divvy, splitOn)
-import Data.Maybe (mapMaybe)
+import Data.Maybe (listToMaybe, mapMaybe)
 
 getInput :: FilePath -> IO [Int]
 getInput = (map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B8.readFile
 
-data OpCode = Add | Multiply | Terminate | NoOp deriving (Show, Eq)
+data Operation = Add | Mul deriving (Show, Eq)
 
-isNoOp :: Operation -> Bool
-isNoOp Operation {..} = opCode == NoOp
-
-data Operation
-  = Operation
-      { opCode :: OpCode,
-        opSrcPos1 :: Int,
-        opSrcPos2 :: Int,
-        opStoragePos :: Int
+data Instruction
+  = Instruction
+      { iOp :: Operation,
+        iSrcPos1 :: Int,
+        iSrcPos2 :: Int,
+        iStoragePos :: Int
       }
-  deriving (Show)
+  | Terminate
+  | Error [Int]
+  deriving (Show, Eq)
+
+isError :: Instruction -> Bool
+isError (Error _) = True
+isError _ = False
+
+-- >>> toInstruction [1,9,10,3]
+-- Instruction {iOp = Add, iSrcPos1 = 9, iSrcPos2 = 10, iStoragePos = 3})
+-- >>> toInstruction [2,9,10,3]
+-- Instruction {iOp = Mul, iSrcPos1 = 9, iSrcPos2 = 10, iStoragePos = 3}
+-- >>> toInstruction [99]
+-- Terminate
+-- >>> toInstruction [100]
+-- Error [100]
+toInstruction :: [Int] -> Instruction
+toInstruction [1, iSrcPos1, iSrcPos2, iStoragePos] = let iOp = Add in Instruction {..}
+toInstruction [2, iSrcPos1, iSrcPos2, iStoragePos] = let iOp = Mul in Instruction {..}
+toInstruction [99] = Terminate
+toInstruction xs = Error xs
+
+parse :: ([[Int]], [Int]) -> ([[Int]], [Int])
+parse (done, []) = (done, [])
+parse (done, todo@(x : _)) = parse (done ++ [moving], remaining)
+  where
+    parametricity x = case x of
+      1 -> 1 + 3
+      2 -> 1 + 3
+      99 -> 1
+      _ -> 1
+    moving = take (parametricity x) todo
+    remaining = drop (parametricity x) todo
 
 -- | Convert four integers to Just Operator, Nothing otherwise.
 --
--- >>> Just (Operation {opCode = Add, opSrcPos1 = 9, opSrcPos2 = 10, opStoragePos = 3})
--- Just (Operation {opCode = Add, opSrcPos1 = 9, opSrcPos2 = 10, opStoragePos = 3})
-toOperation :: [Int] -> Operation
-toOperation [a, opSrcPos1, opSrcPos2, opStoragePos] = Operation {..}
-  where
-    opCode = case a of
-      1 -> Add
-      2 -> Multiply
-      99 -> Terminate
-      _ -> NoOp
-
 -- | Overwrite pos in acc with value x.
 --
 -- >>> saveResult [1,2,3] 0 99
@@ -48,41 +66,35 @@ toOperation [a, opSrcPos1, opSrcPos2, opStoragePos] = Operation {..}
 saveResult :: [Int] -> Int -> Int -> [Int]
 saveResult acc pos x = take pos acc ++ [x] ++ drop (pos + 1) acc
 
-applyOperation :: [Int] -> Operation -> [Int]
-applyOperation acc Operation {..} = case opCode of
-  Add -> saveResult acc opStoragePos $ uncurry (+) getPosPair
-  Multiply -> saveResult acc opStoragePos $ uncurry (*) getPosPair
-  Terminate -> acc
-  NoOp -> acc
+execInstruction :: (Int, [Int]) -> Instruction -> (Int, [Int])
+execInstruction (c, xs) Instruction {..} = case iOp of
+  Add -> (c + 1 + 3, saveResult xs iStoragePos $ uncurry (+) getPosPair)
+  Mul -> (c + 1 + 3, saveResult xs iStoragePos $ uncurry (*) getPosPair)
   where
-    getPos x = acc !! max 0 x
-    getPosPair = (getPos opSrcPos1, getPos opSrcPos2)
-
-execOp :: (Int, [Int]) -> (Int, [Int])
-execOp (c, xs) = let op = getOperation c xs in (c + 1, applyOperation xs op)
-
-getOperation :: Int -> [Int] -> Operation
-getOperation n xs = toOperation (divvy 4 4 xs !! max 0 n)
-
--- FIXME: stop at termination
+    getPos x = xs !! max 0 x
+    getPosPair = (getPos iSrcPos1, getPos iSrcPos2)
 
 -- | Core logic.
 --
--- >>> go [1,0,0,0,99]
--- [2,0,0,0,99]
--- >>> go [2,3,0,3,99]
--- [2,3,0,6,99]
--- >>> go [2,4,4,5,99,0]
--- [2,4,4,5,99,9801]
--- >>> go [1,1,1,4,99,5,6,0,99]
--- [30,1,1,4,2,5,6,0,99]
-go :: [Int] -> [Int]
-go xs = snd . last . take (limit + 1) . iterate execOp . (,) 0 $ xs
-  where
-    limit = div (length xs) 4
+-- >>> umbrella (0,[1,0,0,0,99])
+-- (4,[2,0,0,0,99])
+-- >>> umbrella (0, [2,3,0,3,99])
+-- (4,[2,3,0,6,99])
+-- >>> umbrella (0, [2,4,4,5,99,0])
+-- (4,[2,4,4,5,99,9801])
+-- >>> umbrella (0, [1,1,1,4,99,5,6,0,99])
+-- (8,[30,1,1,4,2,5,6,0,99])
+umbrella :: (Int, [Int]) -> (Int, [Int])
+umbrella (c, xs) =
+  case nextInstruction (drop c xs) of
+    Just istr@(Instruction {}) -> umbrella $ execInstruction (c, xs) istr
+    Just Terminate -> (c, xs)
+
+nextInstruction :: [Int] -> Maybe Instruction
+nextInstruction = listToMaybe . map toInstruction . fst . parse . (,) []
 
 prepare :: [Int] -> [Int]
 prepare xs = saveResult (saveResult xs 1 12) 2 2
 
 intCode :: [Int] -> Int
-intCode = head . go . prepare
+intCode = head . snd . umbrella . (,) 0 . prepare
