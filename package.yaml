@@ -22,11 +22,14 @@ description: "See README.md"
 dependencies:
 - base >= 4.7 && < 5
 - bytestring
+- split
+- text
 
 library:
   source-dirs: src
   exposed-modules:
     - Day1
+    - Day2
 
 tests:
   doctest:
