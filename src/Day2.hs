@@ -1,7 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
 
--- FIXME: error handling, if invalid OpCode
-
 module Day2 where
 
 import qualified Data.ByteString.Char8 as B8
@@ -81,6 +79,8 @@ umbrella (c, xs) =
   case nextInstruction (drop c xs) of
     Just istr@Instruction {} -> umbrella $ execInstruction (c, xs) istr
     Just Terminate -> (c, xs)
+    Just (Error [x]) -> error $ "invalid opCode " ++ show x
+    Just (Error xs) -> error $ "invalid opCode " ++ show xs
 
 nextInstruction :: [Int] -> Maybe Instruction
 nextInstruction = listToMaybe . map toInstruction . fst . parse . (,) []
@@ -92,7 +92,7 @@ intCode :: ([Int] -> [Int]) -> [Int] -> Int
 intCode preparer = head . snd . umbrella . (,) 0 . preparer
 
 findPair :: [Int] -> Int -> Maybe (Int, Int)
-findPair is z = listToMaybe [(x,y) | x <- [0..99], y <- [0..99], intCode (prepare x y) is == z]
+findPair is z = listToMaybe [(x, y) | x <- [0 .. 99], y <- [0 .. 99], intCode (prepare x y) is == z]
 
 formatPair :: Int -> Int -> Int
 formatPair noun verb = 100 * noun + verb
