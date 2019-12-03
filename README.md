@@ -4,3 +4,4 @@
 - [x] **Day 1.2**: extend Day 1.1 to include fuel for fuel (and so on)
 - [x] **Day 2.1**: create Intcode program
 - [x] **Day 2.2**: find pair producing output of 19690720
+- [x] **Day 3.1**: fix fuel management system: determine Manhattan distance from central port to closest intersection

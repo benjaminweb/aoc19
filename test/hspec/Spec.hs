@@ -1,5 +1,6 @@
 import qualified Day1
 import qualified Day2
+import qualified Day3
 import Test.Hspec
 
 main :: IO ()
@@ -19,8 +20,12 @@ main = hspec $
       it "find pair (52,8) to produce output of 19690720" $ do
         is <- Day2.getInput "inputs/2.txt"
         let pair = Day2.findPair is 19690720
-        pair `shouldBe` Just (52,8)
+        pair `shouldBe` Just (52, 8)
       it "format pair to produce output of 19690720 to 5208" $ do
         is <- Day2.getInput "inputs/2.txt"
         let pair = Day2.findPair is 19690720
         maybe 0 (uncurry Day2.formatPair) pair `shouldBe` 5208
+    describe "Day 3.1" $
+      it "calculates Manhattan distance to closest intersection (to central port) to 1211" $ do
+        [a, b] <- Day3.getInput "inputs/3.txt"
+        Day3.nearestIntersection a b `shouldBe` Just 1211
