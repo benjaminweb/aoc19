@@ -37,5 +37,8 @@ main = hspec $
         [a, b] <- Day3.getInput "inputs/3.txt"
         Day3.fewestCombined a b `shouldBe` Just 101386
     describe "Day 4.1"
-      $ it "determines number of different valid passwords in range 248345-746315 to XX"
-      $ Day4.countValidPasswords 248345 746315 `shouldBe` Just 1019
+      $ it "determines number of different valid passwords in range 248345 through 746315 to 1019"
+      $ Day4.countValidPasswords Day4.twoAdjacent 248345 746315 `shouldBe` 1019
+    describe "Day 4.2"
+      $ it "determines number of different valid passwords in range 248345 through 746315 to 660"
+      $ Day4.countValidPasswords Day4.twoAdjacent' 248345 746315 `shouldBe` 660

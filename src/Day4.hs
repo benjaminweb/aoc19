@@ -1,5 +1,6 @@
 module Day4 where
 
+import Data.List (group)
 import Data.List.Split
 
 -- | Dissect Int into list of its digits.
@@ -33,6 +34,18 @@ twoAdjacent xs = any same $ divvy 2 1 xs
   where
     same [a, b] = a == b
 
+-- | Does the number contain two adjacent matching digits
+--   that are no part of a larger group?
+--
+-- >>> twoAdjacent' $ digits 112233
+-- True
+-- >>> twoAdjacent' $ digits 123444
+-- False
+-- >>> twoAdjacent' $ digits 111122
+-- True
+twoAdjacent' :: [Int] -> Bool
+twoAdjacent' = any (\x -> length x == 2) . group
+
 -- |
 --
 -- >>> sameOrIncreasing [1,1,1,1,2,3]
@@ -44,20 +57,22 @@ sameOrIncreasing = all (\[x, y] -> y >= x) . divvy 2 1
 
 -- |
 --
--- >>> validPassword $ digits 111111
+-- >>> validPassword twoAdjacent $ digits 111111
 -- True
--- >>> validPassword $ digits 223450
+-- >>> validPassword twoAdjacent $ digits 223450
 -- False
--- >>> validPassword $ digits 123789
+-- >>> validPassword twoAdjacent $ digits 123789
 -- False
-validPassword :: [Int] -> Bool
-validPassword xs = sameOrIncreasing xs && twoAdjacent xs
+validPassword :: ([Int] -> Bool) -> [Int] -> Bool
+validPassword adjacer xs = sameOrIncreasing xs && adjacer xs
 
 -- | Main runner.
 countValidPasswords ::
+  -- | adjacent function
+  ([Int] -> Bool) ->
   -- | lower bound of range to search within
   Int ->
   -- | upper bound of range to search within
   Int ->
   Int
-countValidPasswords lo hi = length $ filter (validPassword . digits) [lo .. hi]
+countValidPasswords adjacer lo hi = length $ filter (validPassword adjacer . digits) [lo .. hi]
