@@ -1,6 +1,7 @@
 import qualified Day1
 import qualified Day2
 import qualified Day3
+import qualified Day4
 import Test.Hspec
 
 main :: IO ()
@@ -35,3 +36,6 @@ main = hspec $
       $ do
         [a, b] <- Day3.getInput "inputs/3.txt"
         Day3.fewestCombined a b `shouldBe` Just 101386
+    describe "Day 4.1"
+      $ it "determines number of different valid passwords in range 248345-746315 to XX"
+      $ Day4.countValidPasswords 248345 746315 `shouldBe` Just 1019
