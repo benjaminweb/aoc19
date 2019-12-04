@@ -25,7 +25,13 @@ main = hspec $
         is <- Day2.getInput "inputs/2.txt"
         let pair = Day2.findPair is 19690720
         maybe 0 (uncurry Day2.formatPair) pair `shouldBe` 5208
-    describe "Day 3.1" $
-      it "calculates Manhattan distance to closest intersection (to central port) to 1211" $ do
+    describe "Day 3.1"
+      $ it "calculates Manhattan distance to closest intersection (to central port) to 1211"
+      $ do
         [a, b] <- Day3.getInput "inputs/3.txt"
         Day3.nearestIntersection a b `shouldBe` Just 1211
+    describe "Day 3.2"
+      $ it "determines fewest combined steps to intersection to result 101386"
+      $ do
+        [a, b] <- Day3.getInput "inputs/3.txt"
+        Day3.fewestCombined a b `shouldBe` Just 101386

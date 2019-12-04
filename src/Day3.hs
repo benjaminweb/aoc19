@@ -4,7 +4,7 @@
 module Day3 where
 
 import qualified Data.ByteString.Char8 as B8
-import Data.List (sortOn)
+import Data.List (sort, sortOn)
 import Data.List.Split (divvy)
 import Data.Maybe (catMaybes, listToMaybe, mapMaybe)
 import Text.Read (readMaybe)
@@ -85,21 +85,29 @@ axis (Coord x1 y1, Coord x2 y2)
   | x1 /= x2 && y1 == y2 = Horizontal
   | otherwise = Halt
 
+-- |
+--
+-- >>> (Coord 5 3,Coord 2 3) `intersect` (Coord 3 6,Coord 3 2)
+-- Just (Coord 3 3)
 intersect :: Line -> Line -> Maybe Coord
-intersect a b = let op = listToMaybe [x | x <- line b, x `elem` line a] in
-  case (axis a, axis b) of
-    (Horizontal, Vertical)
-      | withinReach a b && changedSides a b -> op
-      | otherwise -> Nothing
-    (Vertical, Horizontal)
-      | withinReach a b && changedSides a b -> op
-      | otherwise -> Nothing
-    (Vertical, Vertical) -> Nothing
-    (Horizontal, Horizontal) -> Nothing
-    (_, _) -> Nothing
+intersect a b =
+  let op = listToMaybe [x | x <- line b, x `elem` line a]
+   in case (axis a, axis b) of
+        (Horizontal, Vertical)
+          | changedSides a b -> op
+          | otherwise -> Nothing
+        (Vertical, Horizontal)
+          | changedSides a b -> op
+          | otherwise -> Nothing
+        (Vertical, Vertical) -> Nothing
+        (Horizontal, Horizontal) -> Nothing
+        (_, _) -> Nothing
 
-withinReach :: Line -> Line -> Bool
-withinReach (Coord x1 y1, Coord x1' y1') (Coord x2 y2, Coord x2' y2') = within x2 x2' x1 || within x2 x2' x1' || within y1 y1' y2 || within y1 y1' y2'
+--
+-- >>> let [a, b] = map (lines' . edges. parseInstructions) ["R8,U5,L5,D3", "U7,R6,D4,L4"] in getIntersections a b
+-- [Coord 5 6]
+getIntersections :: [Line] -> [Line] -> [Coord]
+getIntersections a' b' = [z | z <- catMaybes [x `intersect` y | x <- a', y <- b'], z /= Coord 0 0]
 
 -- |
 --
@@ -141,6 +149,44 @@ lines' xs = zip xs $ tail xs
 -- >>> let [a, b] = map parseInstructions ["R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51","U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"] in nearestIntersection a b
 -- Just 135
 nearestIntersection :: [Instruction] -> [Instruction] -> Maybe Distance
-nearestIntersection a b = snd <$> listToMaybe (sortOn snd [(z, taxicabDistance (Coord 0 0) z) | z <- catMaybes [x `intersect` y | x <- a', y <- b'], z /= Coord 0 0])
+nearestIntersection a b = snd <$> listToMaybe (sortOn snd $ map (\z -> (z, taxicabDistance (Coord 0 0) z)) $ getIntersections a' b')
   where
     [a', b'] = map (lines' . edges) [a, b]
+
+-- Day 3.2
+
+-- | Checks whether Coord is within Line.
+--
+-- >>> inBetween (Coord 1 3, Coord 1 5) (Coord 1 4)
+-- True
+-- >>> inBetween (Coord 1 3, Coord 1 5) (Coord 1 5)
+-- True
+-- >>> inBetween (Coord 1 3, Coord 1 5) (Coord 1 6)
+-- False
+-- >>> inBetween (Coord 1 3, Coord 1 5) (Coord 2 4)
+-- False
+inBetween :: Line -> Coord -> Bool
+inBetween (Coord x1 y1, Coord x1' y1') (Coord x2 y2)
+  | y1 == y1' && y1' == y2 = within x1 x1' x2
+  | x1 == x1' && x1' == x2 = within y1 y1' y2
+  | otherwise = False
+
+sumSteps :: [Line] -> [Line] -> Coord -> Steps
+sumSteps a b c = stepsUntil c a + stepsUntil c b
+
+-- | Calculate number of steps until Coord which is intersected by successive no. of Lines.
+stepsUntil :: Coord -> [Line] -> Steps
+stepsUntil c is = sum $ map (\[x, y] -> taxicabDistance x y) $ divvy 2 1 $ Coord 0 0 : fullSteps ++ [c]
+  where
+    fullSteps = map snd $ takeWhile (\x -> not $ inBetween x c) is
+
+-- | Fewest combined steps to intersection.
+--
+-- >>> let [a, b] = map parseInstructions ["R8,U5,L5,D3", "U7,R6,D4,L4"] in fewestCombined
+-- Just 30
+-- >>> let [a, b] = map parseInstructions ["R75,D30,R83,U83,L12,D49,R71,U7,L72","U62,R66,U55,R34,D71,R55,D58,R83"] in fewestCombined a b
+-- Just 610
+-- >>> let [a, b] = map parseInstructions ["R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51","U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"] in fewestCombined a b
+-- Just 410
+fewestCombined :: [Instruction] -> [Instruction] -> Maybe Steps
+fewestCombined a b = let [a', b'] = map (lines' . edges) [a, b] in listToMaybe $ sort $ map (sumSteps a' b') $ getIntersections a' b'

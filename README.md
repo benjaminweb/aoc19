@@ -5,3 +5,4 @@
 - [x] **Day 2.1**: create Intcode program
 - [x] **Day 2.2**: find pair producing output of 19690720
 - [x] **Day 3.1**: fix fuel management system: determine Manhattan distance from central port to closest intersection
+- [x] **Day 3.2**: minimize signal delay: fewest combined steps wires take to intersection
