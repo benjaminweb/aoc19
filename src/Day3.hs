@@ -34,13 +34,13 @@ parseInstructions = mapMaybe parseInstruction . B8.split ','
 
 -- | ByteString to Instruction.
 --
--- >>> parseInstruction "R75"
+-- >>> parseInstruction $ B8.pack "R75"
 -- Just (Right 75)
--- >>> parseInstruction "D30"
+-- >>> parseInstruction $ B8.pack "D30"
 -- Just (Down 30)
--- >>> parseInstruction "R83"
+-- >>> parseInstruction $ B8.pack "R83"
 -- Just (Right 83)
----- >>> parseInstruction "L12"
+-- >>> parseInstruction $ B8.pack "L12"
 -- Just (Left 12)
 parseInstruction :: B8.ByteString -> Maybe Instruction
 parseInstruction (B8.uncons -> Just (x, xs)) = Instruction (toDirection x) . fst <$> B8.readInt xs
@@ -144,9 +144,9 @@ lines' xs = zip xs $ tail xs
 
 -- | Core logic: For two wires, find intersection point with minimal distance to control port.
 --
--- >>> let [a, b] = map parseInstructions ["R75,D30,R83,U83,L12,D49,R71,U7,L72","U62,R66,U55,R34,D71,R55,D58,R83"] in nearestIntersection a b
+-- >>> let [a, b] = map parseInstructions [B8.pack "R75,D30,R83,U83,L12,D49,R71,U7,L72", B8.pack "U62,R66,U55,R34,D71,R55,D58,R83"] in nearestIntersection a b
 -- Just 159
--- >>> let [a, b] = map parseInstructions ["R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51","U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"] in nearestIntersection a b
+-- >>> let [a, b] = map parseInstructions [B8.pack "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51", B8.pack "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"] in nearestIntersection a b
 -- Just 135
 nearestIntersection :: [Instruction] -> [Instruction] -> Maybe Distance
 nearestIntersection a b = snd <$> listToMaybe (sortOn snd $ map (\z -> (z, taxicabDistance (Coord 0 0) z)) $ getIntersections a' b')
@@ -182,11 +182,11 @@ stepsUntil c is = sum $ map (\[x, y] -> taxicabDistance x y) $ divvy 2 1 $ Coord
 
 -- | Fewest combined steps to intersection.
 --
--- >>> let [a, b] = map parseInstructions ["R8,U5,L5,D3", "U7,R6,D4,L4"] in fewestCombined
+-- >>> let [a, b] = map parseInstructions [B8.pack "R8,U5,L5,D3", B8.pack "U7,R6,D4,L4"] in fewestCombined
 -- Just 30
--- >>> let [a, b] = map parseInstructions ["R75,D30,R83,U83,L12,D49,R71,U7,L72","U62,R66,U55,R34,D71,R55,D58,R83"] in fewestCombined a b
+-- >>> let [a, b] = map parseInstructions [B8.pack "R75,D30,R83,U83,L12,D49,R71,U7,L72", B8.pack "U62,R66,U55,R34,D71,R55,D58,R83"] in fewestCombined a b
 -- Just 610
--- >>> let [a, b] = map parseInstructions ["R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51","U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"] in fewestCombined a b
+-- >>> let [a, b] = map parseInstructions [B8.pack "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51", B8.pack "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"] in fewestCombined a b
 -- Just 410
 fewestCombined :: [Instruction] -> [Instruction] -> Maybe Steps
 fewestCombined a b = let [a', b'] = map (lines' . edges) [a, b] in listToMaybe $ sort $ map (sumSteps a' b') $ getIntersections a' b'
