@@ -35,13 +35,13 @@ parseInstructions = mapMaybe parseInstruction . B8.split ','
 -- | ByteString to Instruction.
 --
 -- >>> parseInstruction $ B8.pack "R75"
--- Just (Right 75)
+-- Just (Instruction Right 75)
 -- >>> parseInstruction $ B8.pack "D30"
--- Just (Down 30)
+-- Just (Instruction Down 30)
 -- >>> parseInstruction $ B8.pack "R83"
--- Just (Right 83)
+-- Just (Instruction Right 83)
 -- >>> parseInstruction $ B8.pack "L12"
--- Just (Left 12)
+-- Just (Instruction Left 12)
 parseInstruction :: B8.ByteString -> Maybe Instruction
 parseInstruction (B8.uncons -> Just (x, xs)) = Instruction (toDirection x) . fst <$> B8.readInt xs
 
@@ -61,7 +61,7 @@ move (Coord x y) (Instruction Left d) = Coord x (y - d)
 -- | Coords on the line between two Coords.
 --
 -- >>> line (Coord 0 0, Coord 0 2)
--- [Coord 0 0, Coord 0 1, Coord 0 2]
+-- [Coord 0 0,Coord 0 1,Coord 0 2]
 line :: Line -> [Coord]
 line (Coord x1 y1, Coord x2 y2) = [Coord x y | x <- [min x1 x2 .. max x1 x2], y <- [min y1 y2 .. max y1 y2]]
 
@@ -182,7 +182,7 @@ stepsUntil c is = sum $ map (\[x, y] -> taxicabDistance x y) $ divvy 2 1 $ Coord
 
 -- | Fewest combined steps to intersection.
 --
--- >>> let [a, b] = map parseInstructions [B8.pack "R8,U5,L5,D3", B8.pack "U7,R6,D4,L4"] in fewestCombined
+-- >>> let [a, b] = map parseInstructions [B8.pack "R8,U5,L5,D3", B8.pack "U7,R6,D4,L4"] in fewestCombined a b
 -- Just 30
 -- >>> let [a, b] = map parseInstructions [B8.pack "R75,D30,R83,U83,L12,D49,R71,U7,L72", B8.pack "U62,R66,U55,R34,D71,R55,D58,R83"] in fewestCombined a b
 -- Just 610
