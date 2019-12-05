@@ -7,4 +7,4 @@
 - [x] **Day 3.1**: fix fuel management system: determine Manhattan distance from central port to closest intersection
 - [x] **Day 3.2**: minimize signal delay: fewest combined steps wires take to intersection
 - [x] **Day 4.1**: determine no. of passwords in range 248345-746315 meeting given criteria to total of 1019
-- [x] **Day 4.2**: as previos, with additional predicate, resulting 660 passwords
+- [x] **Day 4.2**: as previous, with additional predicate, resulting 660 passwords
