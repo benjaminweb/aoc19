@@ -3,6 +3,12 @@ module Day4 where
 import Data.List (group)
 import Data.List.Split
 
+noDigits :: (RealFrac a, Integral p, Floating a) => a -> p
+noDigits x
+  | x < 10 = 1
+  | x == 10 = 2
+  | otherwise = ceiling $ logBase 10 x
+
 -- | Dissect Int into list of its digits.
 --
 -- >>> digits 120
@@ -11,12 +17,11 @@ import Data.List.Split
 -- [1]
 -- >>> digits 12
 -- [1,2]
+-- >>> digits 10
+-- [1,0]
 digits :: Int -> [Int]
 digits z = reverse $ fst $ last $ take toTake $ iterate (\(x, y) -> (x ++ [mod y 10], div y 10)) ([], z)
   where
-    noDigits x
-      | x < 10 = 1
-      | otherwise = ceiling $ logBase 10 x
     toTake
       | noDigits (fromIntegral z) == 0 = 1
       | otherwise = noDigits (fromIntegral z) + 1

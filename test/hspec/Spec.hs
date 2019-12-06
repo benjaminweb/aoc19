@@ -2,6 +2,7 @@ import qualified Day1
 import qualified Day2
 import qualified Day3
 import qualified Day4
+import qualified IntCode
 import Test.Hspec
 
 main :: IO ()
@@ -15,15 +16,15 @@ main = hspec $
     describe "Day 2.1"
       $ it "Intcode program is working"
       $ do
-        result <- Day2.intCode (Day2.prepare 12 2) <$> Day2.getInput "inputs/2.txt"
+        result <- Day2.intCode (Day2.prepare 12 2) <$> IntCode.getInput "inputs/2.txt"
         result `shouldBe` 5866714
     describe "Day 2.2" $ do
       it "find pair (52,8) to produce output of 19690720" $ do
-        is <- Day2.getInput "inputs/2.txt"
+        is <- IntCode.getInput "inputs/2.txt"
         let pair = Day2.findPair is 19690720
         pair `shouldBe` Just (52, 8)
       it "format pair to produce output of 19690720 to 5208" $ do
-        is <- Day2.getInput "inputs/2.txt"
+        is <- IntCode.getInput "inputs/2.txt"
         let pair = Day2.findPair is 19690720
         maybe 0 (uncurry Day2.formatPair) pair `shouldBe` 5208
     describe "Day 3.1"
