@@ -11,7 +11,7 @@ import Optics.At.Core (ix)
 import Optics.Operators ((.~))
 import Optics.Optic ((&))
 
-data Instruction = Add (Maybe ThreeParameter) | Mul (Maybe ThreeParameter) | Save (Maybe (Val, Pos)) | Print (Maybe Parameter) | JumpIfTrue (Maybe TwoParameter) | Terminate | Error (Seq Int) deriving (Show, Eq)
+data Instruction = Add (Maybe ThreeParameter) | Mul (Maybe ThreeParameter) | Save (Maybe (Val, Pos)) | Print (Maybe Parameter) | JumpIfTrue (Maybe TwoParameter) | JumpIfFalse (Maybe TwoParameter) | Terminate | Error (Seq Int) deriving (Show, Eq)
 
 type ValOrPos = Int
 
@@ -24,6 +24,7 @@ data Mode = Position | Immediate deriving (Show, Eq)
 type Parameter = (Mode, ValOrPos)
 
 type TwoParameter = (Parameter, Parameter)
+
 type ThreeParameter = (Parameter, Parameter, Pos)
 
 type ExtOpCode = Int
@@ -83,6 +84,23 @@ getInput = (Seq.fromList . map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B
 --
 -- >>> execInstruction (0, [], Seq.fromList [1105,0,97]) $ JumpIfTrue (Just ((Immediate,0),(Immediate,97)))
 -- (3,[],fromList [1105,0,97])
+--- >>> execInstruction (0, [], Seq.fromList [6,0,0]) $ JumpIfFalse (Just ((Position,0),(Position,0)))
+-- (3,[],fromList [6,0,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [6,1,0]) $ JumpIfFalse (Just ((Position,1),(Position,0)))
+-- (3,[],fromList [6,1,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [106,1,0]) $ JumpIfFalse (Just ((Immediate,0),(Position,99)))
+-- (0,[],fromList [106,1,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1006,1,97]) $ JumpIfFalse (Just ((Position,1),(Immediate,97)))
+-- (3,[],fromList [1006,1,97])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1106,1,97]) $ JumpIfFalse (Just ((Immediate,1),(Immediate,97)))
+-- (3,[],fromList [1106,1,97])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1106,0,97]) $ JumpIfFalse (Just ((Immediate,0),(Immediate,97)))
+-- (97,[],fromList [1106,0,97])
 --
 -- >>> execInstruction (0, [], Seq.fromList [104,2,0]) $ Print (Just (Immediate,2))
 -- (2,[2],fromList [104,2,0])
@@ -96,9 +114,12 @@ execInstruction (c, prints, xs) (Save (Just (target, val))) = (c + 1 + 1, prints
 execInstruction (c, prints, xs) (Print (Just para)) = (c + 1 + 1, prints ++ [getPos xs para], xs)
 execInstruction (c, prints, xs) (JumpIfTrue (Just (para1, para2))) =
   case getPosPair xs para1 para2 of
-        (0, v2) -> (c + 1 + 2, prints, xs)
-        (_, v2) -> (v2, prints, xs)
-
+    (0, v2) -> (c + 1 + 2, prints, xs)
+    (_, v2) -> (v2, prints, xs)
+execInstruction (c, prints, xs) (JumpIfFalse (Just (para1, para2))) =
+  case getPosPair xs para1 para2 of
+    (0, v2) -> (v2, prints, xs)
+    (_, v2) -> (c + 1 + 2, prints, xs)
 
 -- |
 --
@@ -141,6 +162,18 @@ execInstruction (c, prints, xs) (JumpIfTrue (Just (para1, para2))) =
 -- >>> toInstruction Nothing $ Seq.fromList [1105,0,1]
 -- JumpIfTrue (Just ((Immediate,0),(Immediate,1)))
 --
+-- >>> toInstruction Nothing $ Seq.fromList [6,0,1]
+-- JumpIfFalse (Just ((Position,0),(Position,1)))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [106,0,1]
+-- JumpIfFalse (Just ((Immediate,0),(Position,1)))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1006,0,1]
+-- JumpIfFalse (Just ((Position,0),(Immediate,1)))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1106,0,1]
+-- JumpIfFalse (Just ((Immediate,0),(Immediate,1)))
+--
 -- >>> toInstruction Nothing $ Seq.fromList [99]
 -- Terminate
 --
@@ -152,6 +185,9 @@ toInstruction _ (extOpCode :<| para1 :<| para2 :<| Empty) =
     (JumpIfTrue Nothing, m1 : m2 : _) -> JumpIfTrue $ Just ((m1, para1), (m2, para2))
     (JumpIfTrue Nothing, m1 : _) -> JumpIfTrue $ Just ((m1, para1), (Position, para2))
     (JumpIfTrue Nothing, []) -> JumpIfTrue $ Just ((Position, para1), (Position, para2))
+    (JumpIfFalse Nothing, m1 : m2 : _) -> JumpIfFalse $ Just ((m1, para1), (m2, para2))
+    (JumpIfFalse Nothing, m1 : _) -> JumpIfFalse $ Just ((m1, para1), (Position, para2))
+    (JumpIfFalse Nothing, []) -> JumpIfFalse $ Just ((Position, para1), (Position, para2))
 toInstruction _ (extOpCode :<| para1 :<| para2 :<| target :<| Empty) =
   case parseExtOpCode extOpCode of
     (Add Nothing, m1 : m2 : _) -> Add $ Just ((m1, para1), (m2, para2), target)
@@ -176,6 +212,7 @@ toBaseInstruction 2 = Mul Nothing
 toBaseInstruction 3 = Save Nothing
 toBaseInstruction 4 = Print Nothing
 toBaseInstruction 5 = JumpIfTrue Nothing
+toBaseInstruction 6 = JumpIfFalse Nothing
 toBaseInstruction 99 = Terminate
 toBaseInstruction xs = error $ "invalid opCode " ++ show xs
 
@@ -189,6 +226,7 @@ parse (done, todo@(x :<| _)) = parse (done |> moving, remaining)
       3 -> 1 + 1
       4 -> 1 + 1
       5 -> 1 + 2
+      6 -> 1 + 2
       99 -> 1
       _ -> 1
     moving = Seq.take (parametricity x) todo
