@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
 module IntCode where
 
 import qualified Data.ByteString.Char8 as B8
@@ -12,24 +11,19 @@ import Optics.At.Core (ix)
 import Optics.Operators ((.~))
 import Optics.Optic ((&))
 
-data Operation = Add | Mul | Save | Print deriving (Show, Eq)
+data Instruction = Add (Maybe ThreeParameter) | Mul (Maybe ThreeParameter) | Save (Maybe (Val, Pos)) | Print (Maybe Parameter) | Terminate | Error (Seq Int) deriving (Show, Eq)
 
-data Instruction
-  = Instruction
-      { iOp :: Operation,
-        iSrcPara1 :: (Mode, Int),
-        iSrcPara2 :: (Mode, Int),
-        iStoragePos :: Int
-      }
-  | NewInstruction -- Save, Print
-      { niOp :: Operation,
-        niPara :: (Mode, Int)
-      }
-  | Terminate
-  | Error (Seq Int)
-  deriving (Show, Eq)
+type ValOrPos = Int
+
+type Pos = Int
+
+type Val = Int
 
 data Mode = Position | Immediate deriving (Show, Eq)
+
+type Parameter = (Mode, ValOrPos)
+
+type ThreeParameter = (Parameter, Parameter, Pos)
 
 type ExtOpCode = Int
 
@@ -44,58 +38,104 @@ getInput = (Seq.fromList . map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B
 
 -- |
 --
--- >>> execInstruction (0, [], Seq.fromList [1,4,5,6,0,0,0]) Instruction {iOp = Add, iSrcPara1 = (Position,4), iSrcPara2 = (Position,5), iStoragePos = 6}
+-- >>> execInstruction (0, [], Seq.fromList [1,2,4,6,3,0,0]) $ Add (Just ((Position,2),(Position,4),6))
+-- (4,[],fromList [1,2,4,6,3,0,7])
 --
--- >>> execInstruction (0, [], Seq.fromList [1002,4,3,4,33]) Instruction {iOp = Mul, iSrcPara1 = (Position,4), iSrcPara2 = (Immediate,3), iStoragePos = 4}
+-- >>> execInstruction (0, [], Seq.fromList [101,2,3,4,0,0]) $ Add (Just ((Immediate,2),(Position,3),4))
+-- (4,[],fromList [101,2,3,4,6,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1001,2,1,4,0,0]) $ Add (Just ((Position,2),(Immediate,1),4))
+-- (4,[],fromList [1001,2,1,4,2,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1101,3,1,4,0,0]) $ Add (Just ((Immediate,3),(Immediate,1),4))
+-- (4,[],fromList [1101,3,1,4,4,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [2,2,4,6,3,0,0]) $ Mul (Just ((Position,2),(Position,4),6))
+-- (4,[],fromList [2,2,4,6,3,0,12])
+--
+-- >>> execInstruction (0, [], Seq.fromList [102,2,4,6,3,0,0]) $ Mul (Just ((Immediate,2),(Position,4),6))
+-- (4,[],fromList [102,2,4,6,3,0,6])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1102,5,4,6,3,0,0]) $ Mul (Just ((Immediate,5),(Immediate,4),6))
+-- (4,[],fromList [1102,5,4,6,3,0,20])
+--
+-- >>> execInstruction (0, [], Seq.fromList [3,2,0]) $ Save (Just (2,11))
+-- (2,[],fromList [3,2,11])
+--
+-- >>> execInstruction (0, [], Seq.fromList [4,2,0]) $ Print (Just (Position,2))
+-- (2,[0],fromList [4,2,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [104,2,0]) $ Print (Just (Immediate,2))
+-- (2,[2],fromList [104,2,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1002,4,3,4,33]) $ Mul (Just ((Position,4),(Immediate,3),4))
 -- (4,[],fromList [1002,4,3,4,99])
--- >>> execInstruction (0, [], Seq.fromList [1002,4,3,4,33]) NewInstruction {niOp = Print, niPara = (Position,4)}
--- (2,[33],fromList [1002,4,3,4,33])
 execInstruction :: (Int, [Int], Seq Int) -> Instruction -> (Int, [Int], Seq Int)
-execInstruction (c, prints, xs) Instruction {..} = case iOp of
-  Add -> (c + 1 + 3, prints, xs & ix iStoragePos .~ uncurry (+) (getPosPair xs iSrcPara1 iSrcPara2))
-  Mul -> (c + 1 + 3, prints, xs & ix iStoragePos .~ uncurry (*) (getPosPair xs iSrcPara1 iSrcPara2))
-execInstruction (c, prints, xs) NewInstruction {..} = case niOp of
-  Save -> (c + 1 + 1, prints, xs & ix (snd niPara) .~ 1)
-  Print -> (c + 1 + 1, prints ++ [getPos xs niPara], xs)
+execInstruction (c, prints, xs) (Add (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ uncurry (+) (getPosPair xs para1 para2))
+execInstruction (c, prints, xs) (Mul (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ uncurry (*) (getPosPair xs para1 para2))
+execInstruction (c, prints, xs) (Save (Just (target, val))) = (c + 1 + 1, prints, xs & ix target .~ val)
+execInstruction (c, prints, xs) (Print (Just para)) = (c + 1 + 1, prints ++ [getPos xs para], xs)
 
 -- |
 --
--- >>> toInstruction $ Seq.fromList [1002,4,3,4]
--- Instruction {iOp = Mul, Pos1 = 4, iSrcPos2 = 3, iStoragePos = 4}
+-- >>> toInstruction Nothing $ Seq.fromList [1,2,4,6]
+-- Add (Just ((Position,2),(Position,4),6))
 --
--- >>> toInstruction $ Seq.fromList [1,9,10,3]
--- Instruction {iOp = Add, Pos1 = 9, iSrcPos2 = 10, iStoragePos = 3}
--- >>> toInstruction $ Seq.fromList [2,9,10,3]
--- Instruction {iOp = Mul, Pos1 = 9, iSrcPos2 = 10, iStoragePos = 3}
--- >>> toInstruction $ Seq.fromList [99]
+-- >>> toInstruction Nothing $ Seq.fromList [1001,2,4,6]
+-- Add (Just ((Position,2),(Immediate,4),6))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1101,2,4,6]
+-- Add (Just ((Immediate,2),(Immediate,4),6))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [2,4,3,4]
+-- Mul (Just ((Position,4),(Position,3),4))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1002,4,3,4]
+-- Mul (Just ((Position,4),(Immediate,3),4))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1102,4,3,4]
+-- Mul (Just ((Immediate,4),(Immediate,3),4))
+--
+-- >>> toInstruction (Just 55) $ Seq.fromList [3,10]
+-- Save (Just (10,55))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [4,2]
+-- Print (Just (Position,2))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [104,2]
+-- Print (Just (Immediate,2))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [99]
 -- Terminate
--- >>> toInstruction $ Seq.fromList [100]
+--
+-- >>> toInstruction Nothing $ Seq.fromList [100]
 -- Error (fromList [100])
-toInstruction :: Seq Int -> Instruction
-toInstruction (extOpCode :<| iSrcPara1B :<| iSrcPara2B :<| iStoragePos :<| Empty) = Instruction {..}
-  where
-    (iOp, pModes) = parseExtOpCode extOpCode
-    iSrcPara1
-      | null pModes = (Position, iSrcPara1B)
-      | otherwise = (pModes !! 0, iSrcPara1B)
-    iSrcPara2
-      | null pModes = (Position, iSrcPara1B)
-      | otherwise = (pModes !! 1, iSrcPara2B)
-toInstruction (extOpCode :<| niParaB :<| Empty) = NewInstruction {..}
-  where
-    (niOp, pModes) = parseExtOpCode extOpCode
-    niPara
-      | null pModes = (Position, niParaB)
-      | otherwise = (pModes !! 0, niParaB)
-toInstruction (99 :<| Empty) = Terminate
-toInstruction xs = Error xs
+toInstruction :: Maybe Int -> Seq Int -> Instruction
+toInstruction _ (extOpCode :<| para1 :<| para2 :<| target :<| Empty) =
+  case parseExtOpCode extOpCode of
+    (Add Nothing, m1 : m2 : _) -> Add $ Just ((m1, para1), (m2, para2), target)
+    (Add Nothing, m1 : _) -> Add $ Just ((m1, para1), (Position, para2), target)
+    (Add Nothing, []) -> Add $ Just ((Position, para1), (Position, para2), target)
+    (Mul Nothing, m1 : m2 : _) -> Mul $ Just ((m1, para1), (m2, para2), target)
+    (Mul Nothing, m1 : _) -> Mul $ Just ((m1, para1), (Position, para2), target)
+    (Mul Nothing, []) -> Mul $ Just ((Position, para1), (Position, para2), target)
+    (_, _) -> error $ "invalid opCode " ++ show extOpCode
+toInstruction inputVal (extOpCode :<| para1 :<| Empty) =
+  case (parseExtOpCode extOpCode, inputVal) of
+    ((Save Nothing, _), Just v) -> Save $ Just (para1, v)
+    ((Save Nothing, _), Nothing) -> error "Save: please provide input value; none provided!"
+    ((Print Nothing, m1 : _), _) -> Print $ Just (m1, para1)
+    ((Print Nothing, []), _) -> Print $ Just (Position, para1)
+toInstruction _ (99 :<| Empty) = Terminate
+toInstruction _ xs = Error xs
 
-toOperation :: OpCode -> Operation
-toOperation 1 = Add
-toOperation 2 = Mul
-toOperation 3 = Save
-toOperation 4 = Print
-toOperation xs = error $ "invalid opCode " ++ show xs
+toBaseInstruction :: OpCode -> Instruction
+toBaseInstruction 1 = Add Nothing
+toBaseInstruction 2 = Mul Nothing
+toBaseInstruction 3 = Save Nothing
+toBaseInstruction 4 = Print Nothing
+toBaseInstruction 99 = Terminate
+toBaseInstruction xs = error $ "invalid opCode " ++ show xs
 
 parse :: (Seq (Seq Int), Seq Int) -> (Seq (Seq Int), Seq Int)
 parse (done, Empty) = (done, Empty)
@@ -120,28 +160,31 @@ getPosPair xs para1 para2 = (getPos xs para1, getPos xs para2)
 
 -- | Core logic.
 --
--- >>> umbrella (0, [], Seq.fromList [1,0,0,0,99])
+-- >>> umbrella Nothing (0, [], Seq.fromList [1,0,0,0,99])
 -- (4,[],fromList [2,0,0,0,99])
--- >>> umbrella (0, [], Seq.fromList [2,3,0,3,99])
--- (4,[],fromList [2,3,0,3,99])
--- >>> umbrella (0, [], Seq.fromList [2,4,4,5,99,0])
+--
+-- >>> umbrella Nothing (0, [], Seq.fromList [2,3,0,3,99])
+-- (4,[],fromList [2,3,0,6,99])
+--
+-- >>> umbrella Nothing (0, [], Seq.fromList [2,4,4,5,99,0])
 -- (4,[],fromList [2,4,4,5,99,9801])
--- >>> umbrella (0, [], Seq.fromList [1,1,1,4,99,5,6,0,99])
+--
+-- >>> umbrella Nothing (0, [], Seq.fromList [1,1,1,4,99,5,6,0,99])
 -- (8,[],fromList [30,1,1,4,2,5,6,0,99])
--- >>> umbrella (0, [], Seq.fromList [1101,100,-1,4,0])
+--
+-- >>> umbrella Nothing (0, [], Seq.fromList [1101,100,-1,4,0])
 -- (4,[],fromList [1101,100,-1,4,99])
-umbrella :: (Int, [Int], Seq Int) -> (Int, [Int], Seq Int)
-umbrella (c, prints, xs) =
-  case nextInstruction (Seq.drop c xs) of
-    Just istr@Instruction {} -> umbrella $ execInstruction (c, prints, xs) istr
-    Just istr@NewInstruction {} -> umbrella $ execInstruction (c, prints, xs) istr
+umbrella :: Maybe Val -> (Int, [Int], Seq Int) -> (Int, [Int], Seq Int)
+umbrella userInput (c, prints, xs) =
+  case nextInstruction userInput (Seq.drop c xs) of
     Just Terminate -> (c, prints, xs)
     Just (Error (x :<| Empty)) -> error $ "invalid opCode " ++ show x
     Just (Error xs) -> error $ "invalid opCode " ++ show xs
+    Just istr -> umbrella userInput $ execInstruction (c, prints, xs) istr
     Nothing -> (c, prints, xs)
 
-nextInstruction :: Seq Int -> Maybe Instruction
-nextInstruction = seqToMaybe . fmap toInstruction . fst . parse . (,) Empty
+nextInstruction :: Maybe Val -> Seq Int -> Maybe Instruction
+nextInstruction userInput = seqToMaybe . fmap (toInstruction userInput) . fst . parse . (,) Empty
 
 seqToMaybe :: Seq a -> Maybe a
 seqToMaybe Empty = Nothing
@@ -159,36 +202,57 @@ seqToMaybe (x :<| _) = Just x
 -- 99
 getOpCode :: ExtOpCode -> OpCode
 getOpCode 99 = 99
-getOpCode x = (x `mod` 10)
+getOpCode x = x `mod` 10
 
 -- |
 --
--- >>> modes 11012
+-- >>> modes [1,1,0,0,2]
 -- [1,1,0]
--- >>> modes 1002
--- [0,1,0]
-modes :: Int -> [Int]
-modes xs = p3 ++ (digits $ div (xs - getOpCode xs) 100)
-  where
-    p3
-      | xs < 10000 = [0]
-      | otherwise = []
+--
+-- >>> modes [1,0,0,2]
+-- [1,0]
+--
+-- >>> modes [1,0,4]
+-- [1]
+modes :: [Int] -> [Int]
+modes [_] = []
+modes [_, _] = []
+modes [y, _, _] = [y]
+modes [x, y, _, _] = [x, y]
+modes [w, x, y, _, _] = [w, x, y]
 
 -- |
--- >>> parseExtOpCode 1002
--- (Mul,[Position,Immediate,Position])
--- >>> parseExtOpCode 11002
--- (Mul,[Position,Immediate,Immediate])
+--
 -- >>> parseExtOpCode 1
--- (Add,[])
+-- (Add Nothing,[])
+--
+-- >>> parseExtOpCode 2
+-- (Mul Nothing,[])
+--
+-- >>> parseExtOpCode 102
+-- (Mul Nothing,[Immediate])
+--
+-- >>> parseExtOpCode 1002
+-- (Mul Nothing,[Position,Immediate])
+--
+-- >>> parseExtOpCode 11002
+-- (Mul Nothing,[Position,Immediate,Immediate])
+--
 -- >>> parseExtOpCode 3
--- (Save,[])
+-- (Save Nothing,[])
+--
+-- >>> parseExtOpCode 4
+-- (Print Nothing,[])
+--
 -- >>> parseExtOpCode 104
--- (Print,[Immediate])
-parseExtOpCode :: ExtOpCode -> (Operation, [Mode])
+-- (Print Nothing,[Immediate])
+--
+-- >>> parseExtOpCode 99
+-- (Terminate,[])
+parseExtOpCode :: ExtOpCode -> (Instruction, [Mode])
 parseExtOpCode xs
-  | xs < 100 = (toOperation $ getOpCode xs, [])
-  | otherwise = (toOperation $ getOpCode xs, reverse . map toMode . modes $ xs)
+  | xs < 100 = (toBaseInstruction $ getOpCode xs, [])
+  | otherwise = (toBaseInstruction $ getOpCode xs, reverse . map toMode . modes . digits $ xs)
 
 toMode :: ExtOpCode -> Mode
 toMode 0 = Position

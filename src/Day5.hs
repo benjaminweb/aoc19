@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedLists #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE ViewPatterns #-}
 
 module Day5 where
 
+import Data.Sequence (Seq ())
 import IntCode
 
-diagCode = undefined
+outputs :: Int -> Seq Int -> (Int, [Int], Seq Int)
+outputs userInput xs = umbrella (Just userInput) (0, [], xs)
