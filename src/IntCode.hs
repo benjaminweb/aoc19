@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 module IntCode where
 
 import qualified Data.ByteString.Char8 as B8
