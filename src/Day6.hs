@@ -2,6 +2,8 @@
 
 module Day6 where
 
+import Data.Maybe (mapMaybe)
+
 import qualified Data.ByteString.Char8 as BS8 (ByteString, drop, length, lines, pack, readFile, takeWhile)
 
 data Around = Planet BS8.ByteString | UniversalCenterOfMass deriving (Show)
@@ -10,8 +12,8 @@ data Relation = Orbit Relation Relation | NoOrbit Around deriving (Show)
 
 type Count = Int
 
-getInput :: FilePath -> IO [BS8.ByteString]
-getInput = (BS8.lines <$>) . BS8.readFile
+getInput :: FilePath -> IO [Relation]
+getInput = (mapMaybe parseMap . BS8.lines <$>) . BS8.readFile
 
 -- |
 --
