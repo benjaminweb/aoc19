@@ -34,14 +34,19 @@ parseMap xs
 -- Just (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Planet "C")))
 --
 -- >>> mergeRelations (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Planet "C"))) $ Orbit (Planet "C") (Planet "D")
--- Just (Orbit UniversalCenterOfMass (Orbit (Planet "B")) (Orbit (Planet "C") (Planet "D")))
+-- Just (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Orbit (Planet "C") (Planet "D"))))
+--
+-- >>> mergeRelations (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Orbit (Planet "C") (Planet "D")))) $ Orbit (Planet "D") (Planet "E")
+-- Just (Orbit UniversalCenterOfMass (Orbit (Planet "B")) (Orbit (Planet "C") (Orbit (Planet "D") (Planet "E"))))
 mergeRelations :: Relation -> Relation -> Maybe Relation
-mergeRelations (Orbit first second) (Orbit third fourth)
+mergeRelations (Orbit first second) b@(Orbit third fourth)
   | first == third = Just $ Orbit (Orbit first (Orbit third fourth)) second
   | second == third = Just $ Orbit first (Orbit second fourth)
-  | otherwise = Nothing
-
--- Relation Relation   NoOrbit
+  | otherwise = case mergeRelations second b of
+                  Just snd' -> Just $ Orbit first snd'
+                  Nothing -> case mergeRelations first b of
+                                Just fst' -> Just $ Orbit fst' second
+                                Nothing -> Nothing
 
 
 directOrbits :: [Relation] -> Count
