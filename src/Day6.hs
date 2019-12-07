@@ -48,6 +48,19 @@ mergeRelations (Orbit first second) b@(Orbit third fourth)
                                 Just fst' -> Just $ Orbit fst' second
                                 Nothing -> Nothing
 
+-- |
+--
+-- >>> buildTree [Orbit UniversalCenterOfMass (Planet "A"), Orbit (Planet "A") (Planet "B"), Orbit (Planet "B") (Planet "C"), Orbit (Planet "C") (Planet "D"), Orbit (Planet "D") (Planet "E")]
+-- Just (Orbit UniversalCenterOfMass (Orbit (Planet "A") (Orbit (Planet "B") (Orbit (Planet "C") (Orbit (Planet "D") (Planet "E"))))))
+buildTree :: [Relation] -> Maybe Relation
+buildTree [] = Nothing
+buildTree [a] = Just a
+buildTree (a:relations) = Just $ go a relations
+  where
+    go x [] = x
+    go x (y:acc) = case mergeRelations x y of
+                    Just m -> go m acc
+                    Nothing -> go x $ acc ++ [y]
 
 directOrbits :: [Relation] -> Count
 directOrbits = undefined
