@@ -49,4 +49,4 @@ main = hspec $
       $ it "makes sure that all outputs are zero and resulting diagcode is 9025675" $ do
         (_, result, _) <- Day5.outputs 1 <$> IntCode.getInput "inputs/5.txt"
         all (== 0) (init result) `shouldBe` True
-        last result`shouldBe` 9025675
+        last result `shouldBe` 9025675
