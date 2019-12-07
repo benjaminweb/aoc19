@@ -4,7 +4,6 @@ import qualified Day3
 import qualified Day4
 import qualified Day5
 import qualified IntCode
-import Data.List (group)
 import Test.Hspec
 
 main :: IO ()
@@ -46,7 +45,8 @@ main = hspec $
       $ it "determines number of different valid passwords in range 248345 through 746315 to 660"
       $ Day4.countValidPasswords Day4.twoAdjacent' 248345 746315 `shouldBe` 660
     describe "Day 5.1"
-      $ it "makes sure that all outputs are zero and resulting diagcode is 9025675" $ do
+      $ it "makes sure that all outputs are zero and resulting diagcode is 9025675"
+      $ do
         (_, result, _) <- Day5.outputs 1 <$> IntCode.getInput "inputs/5.txt"
         all (== 0) (init result) `shouldBe` True
         last result `shouldBe` 9025675
