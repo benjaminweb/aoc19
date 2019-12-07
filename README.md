@@ -9,3 +9,4 @@
 - [x] **Day 4.1**: determine no. of passwords in range 248345-746315 meeting given criteria to total of 1019
 - [x] **Day 4.2**: as previous, with additional predicate, resulting 660 passwords
 - [x] **Day 5.1**: diagnostic program of Thermal Environment Supervision Terminal (TEST)
+- [x] **Day 5.2**: extend TEST to thermal radiators, op codes 5, 6, 7, 8 and to return program the only output of diagnostic code 11981754
