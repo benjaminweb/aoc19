@@ -50,3 +50,8 @@ main = hspec $
         (_, result, _) <- Day5.outputs 1 <$> IntCode.getInput "inputs/5.txt"
         all (== 0) (init result) `shouldBe` True
         last result `shouldBe` 9025675
+    describe "Day 5.2"
+      $ it "determines the output only to be the diagnostic code of 11981754"
+      $ do
+        (_, result, _) <- Day5.outputs 5 <$> IntCode.getInput "inputs/5.txt"
+        result `shouldBe` [11981754]
