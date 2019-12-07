@@ -12,7 +12,7 @@ import Optics.At.Core (ix)
 import Optics.Operators ((.~))
 import Optics.Optic ((&))
 
-data Instruction = Add (Maybe ThreeParameter) | Mul (Maybe ThreeParameter) | Save (Maybe (Val, Pos)) | Print (Maybe Parameter) | JumpIfTrue (Maybe TwoParameter) | JumpIfFalse (Maybe TwoParameter) | LessThan (Maybe ThreeParameter) | Terminate | Error (Seq Int) deriving (Show, Eq)
+data Instruction = Add (Maybe ThreeParameter) | Mul (Maybe ThreeParameter) | Save (Maybe (Val, Pos)) | Print (Maybe Parameter) | JumpIfTrue (Maybe TwoParameter) | JumpIfFalse (Maybe TwoParameter) | LessThan (Maybe ThreeParameter) | Equals (Maybe ThreeParameter) | Terminate | Error (Seq Int) deriving (Show, Eq)
 
 type ValOrPos = Int
 
@@ -116,6 +116,18 @@ getInput = (Seq.fromList . map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B
 -- >>> execInstruction (0, [], Seq.fromList [1107,0,1,4,0]) $ LessThan (Just ((Immediate,0),(Immediate,1),4))
 -- (4,[],fromList [1107,0,1,4,1])
 --
+-- >>> execInstruction (0, [], Seq.fromList [8,0,0,3]) $ Equals (Just ((Position,0),(Position,0),3))
+-- (4,[],fromList [8,0,0,1])
+--
+-- >>> execInstruction (0, [], Seq.fromList [108,0,0,3]) $ Equals (Just ((Immediate,0),(Position,0),3))
+-- (4,[],fromList [108,0,0,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1008,0,0,3]) $ Equals (Just ((Position,0),(Immediate,0),3))
+-- (4,[],fromList [1008,0,0,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1108,0,0,3]) $ Equals (Just ((Immediate,0),(Immediate,0),3))
+-- (4,[],fromList [1108,0,0,1])
+--
 -- >>> execInstruction (0, [], Seq.fromList [104,2,0]) $ Print (Just (Immediate,2))
 -- (2,[2],fromList [104,2,0])
 --
@@ -135,6 +147,7 @@ execInstruction (c, prints, xs) (JumpIfFalse (Just (para1, para2))) =
     (0, v2) -> (v2, prints, xs)
     (_, v2) -> (c + 1 + 2, prints, xs)
 execInstruction (c, prints, xs) (LessThan (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ bool 0 1 (uncurry (<) $ getPosPair xs para1 para2))
+execInstruction (c, prints, xs) (Equals (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ bool 0 1 (uncurry (==) $ getPosPair xs para1 para2))
 
 -- |
 --
@@ -201,6 +214,18 @@ execInstruction (c, prints, xs) (LessThan (Just (para1, para2, target))) = (c + 
 -- >>> toInstruction Nothing $ Seq.fromList [1107,0,1,4]
 -- LessThan (Just ((Immediate,0),(Immediate,1),4))
 --
+-- >>> toInstruction Nothing $ Seq.fromList [8,0,0,3]
+-- Equals (Just ((Position,0),(Position,0),3))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [108,0,0,3]
+-- Equals (Just ((Immediate,0),(Position,0),3))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1008,0,0,3]
+-- Equals (Just ((Position,0),(Immediate,0),3))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1108,0,0,3]
+-- Equals (Just ((Immediate,0),(Immediate,0),3))
+--
 -- >>> toInstruction Nothing $ Seq.fromList [99]
 -- Terminate
 --
@@ -226,6 +251,9 @@ toInstruction _ (extOpCode :<| para1 :<| para2 :<| target :<| Empty) =
     (LessThan Nothing, m1 : m2 : _) -> LessThan $ Just ((m1, para1), (m2, para2), target)
     (LessThan Nothing, m1 : _) -> LessThan $ Just ((m1, para1), (Position, para2), target)
     (LessThan Nothing, []) -> LessThan $ Just ((Position, para1), (Position, para2), target)
+    (Equals Nothing, m1 : m2 : _) -> Equals $ Just ((m1, para1), (m2, para2), target)
+    (Equals Nothing, m1 : _) -> Equals $ Just ((m1, para1), (Position, para2), target)
+    (Equals Nothing, []) -> Equals $ Just ((Position, para1), (Position, para2), target)
     (_, _) -> error $ "invalid opCode " ++ show extOpCode
 toInstruction inputVal (extOpCode :<| para1 :<| Empty) =
   case (parseExtOpCode extOpCode, inputVal) of
@@ -244,6 +272,7 @@ toBaseInstruction 4 = Print Nothing
 toBaseInstruction 5 = JumpIfTrue Nothing
 toBaseInstruction 6 = JumpIfFalse Nothing
 toBaseInstruction 7 = LessThan Nothing
+toBaseInstruction 8 = Equals Nothing
 toBaseInstruction 99 = Terminate
 toBaseInstruction xs = error $ "invalid opCode " ++ show xs
 
@@ -259,6 +288,7 @@ parse (done, todo@(x :<| _)) = parse (done |> moving, remaining)
       5 -> 1 + 2
       6 -> 1 + 2
       7 -> 1 + 3
+      8 -> 1 + 3
       99 -> 1
       _ -> 1
     moving = Seq.take (parametricity x) todo
