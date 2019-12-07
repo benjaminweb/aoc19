@@ -1,5 +1,6 @@
 module IntCode where
 
+import Data.Bool (bool)
 import qualified Data.ByteString.Char8 as B8
 import Data.Foldable (foldl')
 import Data.List.Split (divvy, splitOn)
@@ -11,7 +12,7 @@ import Optics.At.Core (ix)
 import Optics.Operators ((.~))
 import Optics.Optic ((&))
 
-data Instruction = Add (Maybe ThreeParameter) | Mul (Maybe ThreeParameter) | Save (Maybe (Val, Pos)) | Print (Maybe Parameter) | JumpIfTrue (Maybe TwoParameter) | JumpIfFalse (Maybe TwoParameter) | Terminate | Error (Seq Int) deriving (Show, Eq)
+data Instruction = Add (Maybe ThreeParameter) | Mul (Maybe ThreeParameter) | Save (Maybe (Val, Pos)) | Print (Maybe Parameter) | JumpIfTrue (Maybe TwoParameter) | JumpIfFalse (Maybe TwoParameter) | LessThan (Maybe ThreeParameter) | Terminate | Error (Seq Int) deriving (Show, Eq)
 
 type ValOrPos = Int
 
@@ -84,7 +85,8 @@ getInput = (Seq.fromList . map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B
 --
 -- >>> execInstruction (0, [], Seq.fromList [1105,0,97]) $ JumpIfTrue (Just ((Immediate,0),(Immediate,97)))
 -- (3,[],fromList [1105,0,97])
---- >>> execInstruction (0, [], Seq.fromList [6,0,0]) $ JumpIfFalse (Just ((Position,0),(Position,0)))
+--
+-- >>> execInstruction (0, [], Seq.fromList [6,0,0]) $ JumpIfFalse (Just ((Position,0),(Position,0)))
 -- (3,[],fromList [6,0,0])
 --
 -- >>> execInstruction (0, [], Seq.fromList [6,1,0]) $ JumpIfFalse (Just ((Position,1),(Position,0)))
@@ -101,6 +103,18 @@ getInput = (Seq.fromList . map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B
 --
 -- >>> execInstruction (0, [], Seq.fromList [1106,0,97]) $ JumpIfFalse (Just ((Immediate,0),(Immediate,97)))
 -- (97,[],fromList [1106,0,97])
+--
+-- >>> execInstruction (0, [], Seq.fromList [7,0,1,4,0]) $ LessThan (Just ((Position,0),(Position,1),4))
+-- (4,[],fromList [7,0,1,4,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [107,0,1,4,0]) $ LessThan (Just ((Immediate,0),(Position,1),4))
+-- (4,[],fromList [107,0,1,4,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1007,0,1,4,0]) $ LessThan (Just ((Position,0),(Immediate,1),4))
+-- (4,[],fromList [1007,0,1,4,0])
+--
+-- >>> execInstruction (0, [], Seq.fromList [1107,0,1,4,0]) $ LessThan (Just ((Immediate,0),(Immediate,1),4))
+-- (4,[],fromList [1107,0,1,4,1])
 --
 -- >>> execInstruction (0, [], Seq.fromList [104,2,0]) $ Print (Just (Immediate,2))
 -- (2,[2],fromList [104,2,0])
@@ -120,6 +134,7 @@ execInstruction (c, prints, xs) (JumpIfFalse (Just (para1, para2))) =
   case getPosPair xs para1 para2 of
     (0, v2) -> (v2, prints, xs)
     (_, v2) -> (c + 1 + 2, prints, xs)
+execInstruction (c, prints, xs) (LessThan (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ bool 0 1 (uncurry (<) $ getPosPair xs para1 para2))
 
 -- |
 --
@@ -174,6 +189,18 @@ execInstruction (c, prints, xs) (JumpIfFalse (Just (para1, para2))) =
 -- >>> toInstruction Nothing $ Seq.fromList [1106,0,1]
 -- JumpIfFalse (Just ((Immediate,0),(Immediate,1)))
 --
+-- >>> toInstruction Nothing $ Seq.fromList [7,0,1,4]
+-- LessThan (Just ((Position,0),(Position,1),4))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [107,0,1,4]
+-- LessThan (Just ((Immediate,0),(Position,1),4))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1007,0,1,4]
+-- LessThan (Just ((Position,0),(Immediate,1),4))
+--
+-- >>> toInstruction Nothing $ Seq.fromList [1107,0,1,4]
+-- LessThan (Just ((Immediate,0),(Immediate,1),4))
+--
 -- >>> toInstruction Nothing $ Seq.fromList [99]
 -- Terminate
 --
@@ -196,6 +223,9 @@ toInstruction _ (extOpCode :<| para1 :<| para2 :<| target :<| Empty) =
     (Mul Nothing, m1 : m2 : _) -> Mul $ Just ((m1, para1), (m2, para2), target)
     (Mul Nothing, m1 : _) -> Mul $ Just ((m1, para1), (Position, para2), target)
     (Mul Nothing, []) -> Mul $ Just ((Position, para1), (Position, para2), target)
+    (LessThan Nothing, m1 : m2 : _) -> LessThan $ Just ((m1, para1), (m2, para2), target)
+    (LessThan Nothing, m1 : _) -> LessThan $ Just ((m1, para1), (Position, para2), target)
+    (LessThan Nothing, []) -> LessThan $ Just ((Position, para1), (Position, para2), target)
     (_, _) -> error $ "invalid opCode " ++ show extOpCode
 toInstruction inputVal (extOpCode :<| para1 :<| Empty) =
   case (parseExtOpCode extOpCode, inputVal) of
@@ -213,6 +243,7 @@ toBaseInstruction 3 = Save Nothing
 toBaseInstruction 4 = Print Nothing
 toBaseInstruction 5 = JumpIfTrue Nothing
 toBaseInstruction 6 = JumpIfFalse Nothing
+toBaseInstruction 7 = LessThan Nothing
 toBaseInstruction 99 = Terminate
 toBaseInstruction xs = error $ "invalid opCode " ++ show xs
 
@@ -227,6 +258,7 @@ parse (done, todo@(x :<| _)) = parse (done |> moving, remaining)
       4 -> 1 + 1
       5 -> 1 + 2
       6 -> 1 + 2
+      7 -> 1 + 3
       99 -> 1
       _ -> 1
     moving = Seq.take (parametricity x) todo
