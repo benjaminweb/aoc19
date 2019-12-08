@@ -5,6 +5,7 @@ import qualified Day4
 import qualified Day5
 import qualified Day6
 import qualified Day7
+import qualified Day8
 import qualified IntCode
 import Test.Hspec
 
@@ -72,3 +73,8 @@ main = hspec $
       $ do
         maxThruster <- (Day7.detMaxThrusterSignal 0 [0..4]) <$> IntCode.getInput "inputs/7.txt"
         maxThruster `shouldBe` 87138
+    describe "Day 8.1"
+      $ it "determines image checksum to 2760"
+      $ do
+        pic <- Day8.parsePicture 25 6 <$> Day8.getInput "inputs/8.txt"
+        Day8.checksum pic `shouldBe` 2760

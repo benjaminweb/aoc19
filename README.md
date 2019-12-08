@@ -13,3 +13,5 @@
 - [x] **Day 6.1**: determine orbit count checksum that is total no. of direct orbits and indirect orbits of 234446
 - [x] **Day 6.2**: determine minimum no. of orbital transfers for "SAN" and "YOU" to meet to 385
 - [x] **Day 7.1**: implement amplifiers, determine highest signal that can be sent to the thrusters to 87138
+- [ ] **Day 7.2**: implement feedback loop for amplifiers
+- [x] **Day 8.1**: determine image checksum to 2760
