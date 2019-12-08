@@ -2,71 +2,33 @@
 
 module Day6 where
 
-import Data.Maybe (mapMaybe)
-
-import qualified Data.ByteString.Char8 as BS8 (ByteString, drop, length, lines, pack, readFile, takeWhile)
-
-data Relation = Orbit Relation Relation | Planet BS8.ByteString | UniversalCenterOfMass deriving (Show, Eq)
+import Data.List.Split (splitOn)
+import qualified Data.Map.Strict as Map
 
 type Count = Int
 
-getInput :: FilePath -> IO [Relation]
-getInput = (mapMaybe parseMap . BS8.lines <$>) . BS8.readFile
+getInput :: FilePath -> IO (Map.Map String String)
+getInput = fmap (Map.fromList . map ((\[x, y] -> (y, x)) . splitOn ")") . lines) . readFile
 
 -- |
 --
--- >>> parseMap $ BS8.pack "COM)B"
--- Just (Orbit UniversalCenterOfMass (Planet "B"))
+-- >>> countOrbits 0 "A" $ Map.fromList [("A", "COM")]
+-- 1
 --
--- >>> parseMap $ BS8.pack "B)C"
--- Just (Orbit (Planet "B") (Planet "C"))
-parseMap :: BS8.ByteString -> Maybe Relation
-parseMap xs
-  | first == BS8.pack "COM" = Just $ Orbit UniversalCenterOfMass (Planet second)
-  | otherwise = Just $ Orbit (Planet first) (Planet second)
-  where
-    first = BS8.takeWhile (/= ')') xs
-    second = BS8.drop (BS8.length first + 1) xs
-
--- | Merge two `Relation`s if one is part of the other.
--- 
--- >>> mergeRelations (Orbit UniversalCenterOfMass (Planet "B")) $ Orbit (Planet "B") (Planet "C")
--- Just (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Planet "C")))
---
--- >>> mergeRelations (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Planet "C"))) $ Orbit (Planet "C") (Planet "D")
--- Just (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Orbit (Planet "C") (Planet "D"))))
---
--- >>> mergeRelations (Orbit UniversalCenterOfMass (Orbit (Planet "B") (Orbit (Planet "C") (Planet "D")))) $ Orbit (Planet "D") (Planet "E")
--- Just (Orbit UniversalCenterOfMass (Orbit (Planet "B")) (Orbit (Planet "C") (Orbit (Planet "D") (Planet "E"))))
-mergeRelations :: Relation -> Relation -> Maybe Relation
-mergeRelations (Orbit first second) b@(Orbit third fourth)
-  | first == third = Just $ Orbit (Orbit first (Orbit third fourth)) second
-  | second == third = Just $ Orbit first (Orbit second fourth)
-  | otherwise = case mergeRelations second b of
-                  Just snd' -> Just $ Orbit first snd'
-                  Nothing -> case mergeRelations first b of
-                                Just fst' -> Just $ Orbit fst' second
-                                Nothing -> Nothing
+-- >>> countOrbits 0 "B" $ Map.fromList [("A", "COM"), ("B", "A")]
+-- 2
+countOrbits :: Int -> String -> Map.Map String String -> Count
+countOrbits c k m = case Map.lookup k m of
+  Just "COM" -> c + 1
+  Just x -> countOrbits (c + 1) x m
+  Nothing -> error $ "key " ++ "k not found!"
 
 -- |
 --
--- >>> buildTree [Orbit UniversalCenterOfMass (Planet "A"), Orbit (Planet "A") (Planet "B"), Orbit (Planet "B") (Planet "C"), Orbit (Planet "C") (Planet "D"), Orbit (Planet "D") (Planet "E")]
--- Just (Orbit UniversalCenterOfMass (Orbit (Planet "A") (Orbit (Planet "B") (Orbit (Planet "C") (Orbit (Planet "D") (Planet "E"))))))
-buildTree :: [Relation] -> Maybe Relation
-buildTree [] = Nothing
-buildTree [a] = Just a
-buildTree (a:relations) = Just $ go a relations
-  where
-    go x [] = x
-    go x (y:acc) = case mergeRelations x y of
-                    Just m -> go m acc
-                    Nothing -> go x $ acc ++ [y]
-
-directOrbits :: [Relation] -> Count
-directOrbits = undefined
-
-indirectOrbits :: [Relation] -> Count
-indirectOrbits = undefined
-
-totalOrbits :: [Relation] -> Count
-totalOrbits xs = directOrbits xs + indirectOrbits xs
+-- >>> countTotalOrbits  $ Map.fromList [("A", "COM"), ("B", "A")]
+-- 3
+--
+-- >>> countTotalOrbits  $ Map.fromList [("A", "COM"), ("B", "A"), ("C", "B")]
+-- 6
+countTotalOrbits :: Map.Map String String -> Count
+countTotalOrbits m = sum $ map (\x -> countOrbits 0 x m) $ Map.keys m

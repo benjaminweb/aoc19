@@ -10,4 +10,4 @@
 - [x] **Day 4.2**: as previous, with additional predicate, resulting 660 passwords
 - [x] **Day 5.1**: implement parser of diagnostic program of Thermal Environment Supervision Terminal (TEST) to result all outputs to 0 and diagnostic code to 9025675
 - [x] **Day 5.2**: extend TEST to thermal radiators, op codes 5, 6, 7, 8 and to return program the only output of diagnostic code 11981754
-- [ ] **Day 6.1**: determine orbit count checksum: total no. of direct orbits and indirect orbits
+- [x] **Day 6.1**: determine orbit count checksum that is total no. of direct orbits and indirect orbits of 234446

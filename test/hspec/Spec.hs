@@ -3,6 +3,7 @@ import qualified Day2
 import qualified Day3
 import qualified Day4
 import qualified Day5
+import qualified Day6
 import qualified IntCode
 import Test.Hspec
 
@@ -55,3 +56,8 @@ main = hspec $
       $ do
         (_, result, _) <- Day5.outputs 5 <$> IntCode.getInput "inputs/5.txt"
         result `shouldBe` [11981754]
+    describe "Day 6.1"
+      $ it "determines the total no. of orbits to 234446"
+      $ do
+        total <- Day6.countOrbits <$> Day6.getInput "inputs/6.txt"
+        total `shouldBe` 0
