@@ -4,6 +4,7 @@ import qualified Day3
 import qualified Day4
 import qualified Day5
 import qualified Day6
+import qualified Day7
 import qualified IntCode
 import Test.Hspec
 
@@ -66,3 +67,8 @@ main = hspec $
       $ do
         transfers <- Day6.detMinimumTransfers "SAN" "YOU" <$> Day6.getInput "inputs/6.txt"
         transfers `shouldBe` 385
+    describe "Day 7.1"
+      $ it "determines the maximum thruster signal to 87138"
+      $ do
+        maxThruster <- (Day7.detMaxThrusterSignal 0) <$> IntCode.getInput "inputs/7.txt"
+        maxThruster `shouldBe` 87138

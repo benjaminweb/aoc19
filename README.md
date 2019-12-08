@@ -12,4 +12,4 @@
 - [x] **Day 5.2**: extend TEST to thermal radiators, op codes 5, 6, 7, 8 and to return program the only output of diagnostic code 11981754
 - [x] **Day 6.1**: determine orbit count checksum that is total no. of direct orbits and indirect orbits of 234446
 - [x] **Day 6.2**: determine minimum no. of orbital transfers for "SAN" and "YOU" to meet to 385
-- [ ] **Day 7.1**: implement amplifiers, determine highest signal that can be sent to the thrusters
+- [x] **Day 7.1**: implement amplifiers, determine highest signal that can be sent to the thrusters to 87138

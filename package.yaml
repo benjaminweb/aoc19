@@ -36,8 +36,9 @@ library:
     - Day3
     - Day4
     - Day5
-    - IntCode
     - Day6
+    - Day7
+    - IntCode
 
 tests:
   doctest:
