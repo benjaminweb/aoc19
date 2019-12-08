@@ -70,5 +70,5 @@ main = hspec $
     describe "Day 7.1"
       $ it "determines the maximum thruster signal to 87138"
       $ do
-        maxThruster <- (Day7.detMaxThrusterSignal 0) <$> IntCode.getInput "inputs/7.txt"
+        maxThruster <- (Day7.detMaxThrusterSignal 0 [0..4]) <$> IntCode.getInput "inputs/7.txt"
         maxThruster `shouldBe` 87138
