@@ -15,3 +15,4 @@
 - [x] **Day 7.1**: implement amplifiers, determine highest signal that can be sent to the thrusters to 87138
 - [ ] **Day 7.2**: implement feedback loop for amplifiers
 - [x] **Day 8.1**: determine image checksum to 2760
+- [x] **Day 8.2**: determine image message to "AGUEB"

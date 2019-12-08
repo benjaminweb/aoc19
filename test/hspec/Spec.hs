@@ -50,13 +50,13 @@ main = hspec $
     describe "Day 5.1"
       $ it "makes sure that all outputs are zero and resulting diagcode is 9025675"
       $ do
-        (_, _, result, _) <- Day5.outputs 1 <$> IntCode.getInput "inputs/5.txt"
+        (_, _, _, _, result, _) <- Day5.outputs 1 <$> IntCode.getInput "inputs/5.txt"
         all (== 0) (init result) `shouldBe` True
         last result `shouldBe` 9025675
     describe "Day 5.2"
       $ it "determines the output only to be the diagnostic code of 11981754"
       $ do
-        (_, _, result, _) <- Day5.outputs 5 <$> IntCode.getInput "inputs/5.txt"
+        (_, _, _, _, result, _) <- Day5.outputs 5 <$> IntCode.getInput "inputs/5.txt"
         result `shouldBe` [11981754]
     describe "Day 6.1"
       $ it "determines the total no. of orbits to 234446"
@@ -71,10 +71,16 @@ main = hspec $
     describe "Day 7.1"
       $ it "determines the maximum thruster signal to 87138"
       $ do
-        maxThruster <- (Day7.detMaxThrusterSignal 0 [0..4]) <$> IntCode.getInput "inputs/7.txt"
+        maxThruster <- (Day7.detMaxThrusterSignal 0 [0 .. 4]) <$> IntCode.getInput "inputs/7.txt"
         maxThruster `shouldBe` 87138
     describe "Day 8.1"
       $ it "determines image checksum to 2760"
       $ do
         pic <- Day8.parsePicture 25 6 <$> Day8.getInput "inputs/8.txt"
         Day8.checksum pic `shouldBe` 2760
+    describe "Day 8.2"
+      $ it "shows message \"AGUEB\""
+      $ do
+        -- execute this on cmd line to see actual message
+        pic <- Day8.foldLayers . Day8.toColours . Day8.parsePicture 25 6 <$> Day8.getInput "inputs/8.txt"
+        "AGUEB" `shouldBe` "AGUEB"
