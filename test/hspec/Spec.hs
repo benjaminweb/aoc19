@@ -48,13 +48,13 @@ main = hspec $
     describe "Day 5.1"
       $ it "makes sure that all outputs are zero and resulting diagcode is 9025675"
       $ do
-        (_, result, _) <- Day5.outputs 1 <$> IntCode.getInput "inputs/5.txt"
+        (_, _, result, _) <- Day5.outputs 1 <$> IntCode.getInput "inputs/5.txt"
         all (== 0) (init result) `shouldBe` True
         last result `shouldBe` 9025675
     describe "Day 5.2"
       $ it "determines the output only to be the diagnostic code of 11981754"
       $ do
-        (_, result, _) <- Day5.outputs 5 <$> IntCode.getInput "inputs/5.txt"
+        (_, _, result, _) <- Day5.outputs 5 <$> IntCode.getInput "inputs/5.txt"
         result `shouldBe` [11981754]
     describe "Day 6.1"
       $ it "determines the total no. of orbits to 234446"

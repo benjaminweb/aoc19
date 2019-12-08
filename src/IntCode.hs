@@ -41,197 +41,197 @@ getInput = (Seq.fromList . map fst . mapMaybe B8.readInt . B8.split ',' <$>) . B
 
 -- |
 --
--- >>> execInstruction (0, [], Seq.fromList [1,2,4,6,3,0,0]) $ Add (Just ((Position,2),(Position,4),6))
--- (4,[],fromList [1,2,4,6,3,0,7])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1,2,4,6,3,0,0]) $ Add (Just ((Position,2),(Position,4),6))
+-- ([],4,[],fromList [1,2,4,6,3,0,7])
 --
--- >>> execInstruction (0, [], Seq.fromList [101,2,3,4,0,0]) $ Add (Just ((Immediate,2),(Position,3),4))
--- (4,[],fromList [101,2,3,4,6,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [101,2,3,4,0,0]) $ Add (Just ((Immediate,2),(Position,3),4))
+-- ([],4,[],fromList [101,2,3,4,6,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1001,2,1,4,0,0]) $ Add (Just ((Position,2),(Immediate,1),4))
--- (4,[],fromList [1001,2,1,4,2,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1001,2,1,4,0,0]) $ Add (Just ((Position,2),(Immediate,1),4))
+-- ([],4,[],fromList [1001,2,1,4,2,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1101,3,1,4,0,0]) $ Add (Just ((Immediate,3),(Immediate,1),4))
--- (4,[],fromList [1101,3,1,4,4,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1101,3,1,4,0,0]) $ Add (Just ((Immediate,3),(Immediate,1),4))
+-- ([],4,[],fromList [1101,3,1,4,4,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [2,2,4,6,3,0,0]) $ Mul (Just ((Position,2),(Position,4),6))
--- (4,[],fromList [2,2,4,6,3,0,12])
+-- >>> execInstruction ([], 0, [], Seq.fromList [2,2,4,6,3,0,0]) $ Mul (Just ((Position,2),(Position,4),6))
+-- ([],4,[],fromList [2,2,4,6,3,0,12])
 --
--- >>> execInstruction (0, [], Seq.fromList [102,2,4,6,3,0,0]) $ Mul (Just ((Immediate,2),(Position,4),6))
--- (4,[],fromList [102,2,4,6,3,0,6])
+-- >>> execInstruction ([], 0, [], Seq.fromList [102,2,4,6,3,0,0]) $ Mul (Just ((Immediate,2),(Position,4),6))
+-- ([],4,[],fromList [102,2,4,6,3,0,6])
 --
--- >>> execInstruction (0, [], Seq.fromList [1102,5,4,6,3,0,0]) $ Mul (Just ((Immediate,5),(Immediate,4),6))
--- (4,[],fromList [1102,5,4,6,3,0,20])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1102,5,4,6,3,0,0]) $ Mul (Just ((Immediate,5),(Immediate,4),6))
+-- ([],4,[],fromList [1102,5,4,6,3,0,20])
 --
--- >>> execInstruction (0, [], Seq.fromList [3,2,0]) $ Save (Just (2,11))
--- (2,[],fromList [3,2,11])
+-- >>> execInstruction ([2], 0, [], Seq.fromList [3,2,0]) $ Save (Just (2,11))
+-- ([],2,[],fromList [3,2,11])
 --
--- >>> execInstruction (0, [], Seq.fromList [4,2,0]) $ Print (Just (Position,2))
--- (2,[0],fromList [4,2,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [4,2,0]) $ Print (Just (Position,2))
+-- ([],2,[0],fromList [4,2,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [5,0,0]) $ JumpIfTrue (Just ((Position,0),(Position,0)))
--- (5,[],fromList [5,0,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [5,0,0]) $ JumpIfTrue (Just ((Position,0),(Position,0)))
+-- ([],5,[],fromList [5,0,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [5,1,0]) $ JumpIfTrue (Just ((Position,1),(Position,0)))
--- (5,[],fromList [5,1,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [5,1,0]) $ JumpIfTrue (Just ((Position,1),(Position,0)))
+-- ([],5,[],fromList [5,1,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [105,1,0]) $ JumpIfTrue (Just ((Immediate,0),(Position,99)))
--- (3,[],fromList [105,1,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [105,1,0]) $ JumpIfTrue (Just ((Immediate,0),(Position,99)))
+-- ([],3,[],fromList [105,1,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1005,1,97]) $ JumpIfTrue (Just ((Position,1),(Immediate,97)))
--- (97,[],fromList [1005,1,97])
+-- >>> execInstruction ([],0, [], Seq.fromList [1005,1,97]) $ JumpIfTrue (Just ((Position,1),(Immediate,97)))
+-- ([],97,[],fromList [1005,1,97])
 --
--- >>> execInstruction (0, [], Seq.fromList [1105,1,97]) $ JumpIfTrue (Just ((Immediate,1),(Immediate,97)))
--- (97,[],fromList [1105,1,97])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1105,1,97]) $ JumpIfTrue (Just ((Immediate,1),(Immediate,97)))
+-- ([],97,[],fromList [1105,1,97])
 --
--- >>> execInstruction (0, [], Seq.fromList [1105,0,97]) $ JumpIfTrue (Just ((Immediate,0),(Immediate,97)))
--- (3,[],fromList [1105,0,97])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1105,0,97]) $ JumpIfTrue (Just ((Immediate,0),(Immediate,97)))
+-- ([],3,[],fromList [1105,0,97])
 --
--- >>> execInstruction (0, [], Seq.fromList [6,0,0]) $ JumpIfFalse (Just ((Position,0),(Position,0)))
--- (3,[],fromList [6,0,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [6,0,0]) $ JumpIfFalse (Just ((Position,0),(Position,0)))
+-- ([],3,[],fromList [6,0,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [6,1,0]) $ JumpIfFalse (Just ((Position,1),(Position,0)))
--- (3,[],fromList [6,1,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [6,1,0]) $ JumpIfFalse (Just ((Position,1),(Position,0)))
+-- ([],3,[],fromList [6,1,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [106,1,0]) $ JumpIfFalse (Just ((Immediate,0),(Position,99)))
--- (0,[],fromList [106,1,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [106,1,0]) $ JumpIfFalse (Just ((Immediate,0),(Position,99)))
+-- ([],0,[],fromList [106,1,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1006,1,97]) $ JumpIfFalse (Just ((Position,1),(Immediate,97)))
--- (3,[],fromList [1006,1,97])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1006,1,97]) $ JumpIfFalse (Just ((Position,1),(Immediate,97)))
+-- ([],3,[],fromList [1006,1,97])
 --
--- >>> execInstruction (0, [], Seq.fromList [1106,1,97]) $ JumpIfFalse (Just ((Immediate,1),(Immediate,97)))
--- (3,[],fromList [1106,1,97])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1106,1,97]) $ JumpIfFalse (Just ((Immediate,1),(Immediate,97)))
+-- ([],3,[],fromList [1106,1,97])
 --
--- >>> execInstruction (0, [], Seq.fromList [1106,0,97]) $ JumpIfFalse (Just ((Immediate,0),(Immediate,97)))
--- (97,[],fromList [1106,0,97])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1106,0,97]) $ JumpIfFalse (Just ((Immediate,0),(Immediate,97)))
+-- ([],97,[],fromList [1106,0,97])
 --
--- >>> execInstruction (0, [], Seq.fromList [7,0,1,4,0]) $ LessThan (Just ((Position,0),(Position,1),4))
--- (4,[],fromList [7,0,1,4,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [7,0,1,4,0]) $ LessThan (Just ((Position,0),(Position,1),4))
+-- ([],4,[],fromList [7,0,1,4,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [107,0,1,4,0]) $ LessThan (Just ((Immediate,0),(Position,1),4))
--- (4,[],fromList [107,0,1,4,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [107,0,1,4,0]) $ LessThan (Just ((Immediate,0),(Position,1),4))
+-- ([],4,[],fromList [107,0,1,4,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1007,0,1,4,0]) $ LessThan (Just ((Position,0),(Immediate,1),4))
--- (4,[],fromList [1007,0,1,4,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1007,0,1,4,0]) $ LessThan (Just ((Position,0),(Immediate,1),4))
+-- ([],4,[],fromList [1007,0,1,4,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1107,0,1,4,0]) $ LessThan (Just ((Immediate,0),(Immediate,1),4))
--- (4,[],fromList [1107,0,1,4,1])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1107,0,1,4,0]) $ LessThan (Just ((Immediate,0),(Immediate,1),4))
+-- ([],4,[],fromList [1107,0,1,4,1])
 --
--- >>> execInstruction (0, [], Seq.fromList [8,0,0,3]) $ Equals (Just ((Position,0),(Position,0),3))
--- (4,[],fromList [8,0,0,1])
+-- >>> execInstruction ([], 0, [], Seq.fromList [8,0,0,3]) $ Equals (Just ((Position,0),(Position,0),3))
+-- ([],4,[],fromList [8,0,0,1])
 --
--- >>> execInstruction (0, [], Seq.fromList [108,0,0,3]) $ Equals (Just ((Immediate,0),(Position,0),3))
--- (4,[],fromList [108,0,0,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [108,0,0,3]) $ Equals (Just ((Immediate,0),(Position,0),3))
+-- ([],4,[],fromList [108,0,0,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1008,0,0,3]) $ Equals (Just ((Position,0),(Immediate,0),3))
--- (4,[],fromList [1008,0,0,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1008,0,0,3]) $ Equals (Just ((Position,0),(Immediate,0),3))
+-- ([],4,[],fromList [1008,0,0,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1108,0,0,3]) $ Equals (Just ((Immediate,0),(Immediate,0),3))
--- (4,[],fromList [1108,0,0,1])
+-- >>> execInstruction ([], 0, [], Seq.fromList [1108,0,0,3]) $ Equals (Just ((Immediate,0),(Immediate,0),3))
+-- ([],4,[],fromList [1108,0,0,1])
 --
--- >>> execInstruction (0, [], Seq.fromList [104,2,0]) $ Print (Just (Immediate,2))
--- (2,[2],fromList [104,2,0])
+-- >>> execInstruction ([], 0, [], Seq.fromList [104,2,0]) $ Print (Just (Immediate,2))
+-- ([],2,[2],fromList [104,2,0])
 --
--- >>> execInstruction (0, [], Seq.fromList [1002,4,3,4,33]) $ Mul (Just ((Position,4),(Immediate,3),4))
--- (4,[],fromList [1002,4,3,4,99])
-execInstruction :: (Int, [Int], Seq Int) -> Instruction -> (Int, [Int], Seq Int)
-execInstruction (c, prints, xs) (Add (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ uncurry (+) (getPosPair xs para1 para2))
-execInstruction (c, prints, xs) (Mul (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ uncurry (*) (getPosPair xs para1 para2))
-execInstruction (c, prints, xs) (Save (Just (target, val))) = (c + 1 + 1, prints, xs & ix target .~ val)
-execInstruction (c, prints, xs) (Print (Just para)) = (c + 1 + 1, prints ++ [getPos xs para], xs)
-execInstruction (c, prints, xs) (JumpIfTrue (Just (para1, para2))) =
+-- >>> execInstruction ([], 0, [], Seq.fromList [1002,4,3,4,33]) $ Mul (Just ((Position,4),(Immediate,3),4))
+-- ([],4,[],fromList [1002,4,3,4,99])
+execInstruction :: ([Val], Int, [Int], Seq Int) -> Instruction -> ([Val], Int, [Int], Seq Int)
+execInstruction (inputs, c, prints, xs) (Add (Just (para1, para2, target))) = (inputs, c + 1 + 3, prints, xs & ix target .~ uncurry (+) (getPosPair xs para1 para2))
+execInstruction (inputs, c, prints, xs) (Mul (Just (para1, para2, target))) = (inputs, c + 1 + 3, prints, xs & ix target .~ uncurry (*) (getPosPair xs para1 para2))
+execInstruction (inputs, c, prints, xs) (Save (Just (target, val))) = (tail inputs, c + 1 + 1, prints, xs & ix target .~ val)
+execInstruction (inputs, c, prints, xs) (Print (Just para)) = (inputs, c + 1 + 1, prints ++ [getPos xs para], xs)
+execInstruction (inputs, c, prints, xs) (JumpIfTrue (Just (para1, para2))) =
   case getPosPair xs para1 para2 of
-    (0, v2) -> (c + 1 + 2, prints, xs)
-    (_, v2) -> (v2, prints, xs)
-execInstruction (c, prints, xs) (JumpIfFalse (Just (para1, para2))) =
+    (0, v2) -> (inputs, c + 1 + 2, prints, xs)
+    (_, v2) -> (inputs, v2, prints, xs)
+execInstruction (inputs, c, prints, xs) (JumpIfFalse (Just (para1, para2))) =
   case getPosPair xs para1 para2 of
-    (0, v2) -> (v2, prints, xs)
-    (_, v2) -> (c + 1 + 2, prints, xs)
-execInstruction (c, prints, xs) (LessThan (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ bool 0 1 (uncurry (<) $ getPosPair xs para1 para2))
-execInstruction (c, prints, xs) (Equals (Just (para1, para2, target))) = (c + 1 + 3, prints, xs & ix target .~ bool 0 1 (uncurry (==) $ getPosPair xs para1 para2))
+    (0, v2) -> (inputs, v2, prints, xs)
+    (_, v2) -> (inputs, c + 1 + 2, prints, xs)
+execInstruction (inputs, c, prints, xs) (LessThan (Just (para1, para2, target))) = (inputs, c + 1 + 3, prints, xs & ix target .~ bool 0 1 (uncurry (<) $ getPosPair xs para1 para2))
+execInstruction (inputs, c, prints, xs) (Equals (Just (para1, para2, target))) = (inputs, c + 1 + 3, prints, xs & ix target .~ bool 0 1 (uncurry (==) $ getPosPair xs para1 para2))
 
 -- |
 --
--- >>> toInstruction Nothing $ Seq.fromList [1,2,4,6]
+-- >>> toInstruction [] $ Seq.fromList [1,2,4,6]
 -- Add (Just ((Position,2),(Position,4),6))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1001,2,4,6]
+-- >>> toInstruction [] $ Seq.fromList [1001,2,4,6]
 -- Add (Just ((Position,2),(Immediate,4),6))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1101,2,4,6]
+-- >>> toInstruction [] $ Seq.fromList [1101,2,4,6]
 -- Add (Just ((Immediate,2),(Immediate,4),6))
 --
--- >>> toInstruction Nothing $ Seq.fromList [2,4,3,4]
+-- >>> toInstruction [] $ Seq.fromList [2,4,3,4]
 -- Mul (Just ((Position,4),(Position,3),4))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1002,4,3,4]
+-- >>> toInstruction [] $ Seq.fromList [1002,4,3,4]
 -- Mul (Just ((Position,4),(Immediate,3),4))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1102,4,3,4]
+-- >>> toInstruction [] $ Seq.fromList [1102,4,3,4]
 -- Mul (Just ((Immediate,4),(Immediate,3),4))
 --
--- >>> toInstruction (Just 55) $ Seq.fromList [3,10]
+-- >>> toInstruction [55] $ Seq.fromList [3,10]
 -- Save (Just (10,55))
 --
--- >>> toInstruction Nothing $ Seq.fromList [4,2]
+-- >>> toInstruction [] $ Seq.fromList [4,2]
 -- Print (Just (Position,2))
 --
--- >>> toInstruction Nothing $ Seq.fromList [104,2]
+-- >>> toInstruction [] $ Seq.fromList [104,2]
 -- Print (Just (Immediate,2))
 --
--- >>> toInstruction Nothing $ Seq.fromList [5,0,1]
+-- >>> toInstruction [] $ Seq.fromList [5,0,1]
 -- JumpIfTrue (Just ((Position,0),(Position,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [105,0,1]
+-- >>> toInstruction [] $ Seq.fromList [105,0,1]
 -- JumpIfTrue (Just ((Immediate,0),(Position,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1005,0,1]
+-- >>> toInstruction [] $ Seq.fromList [1005,0,1]
 -- JumpIfTrue (Just ((Position,0),(Immediate,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1105,0,1]
+-- >>> toInstruction [] $ Seq.fromList [1105,0,1]
 -- JumpIfTrue (Just ((Immediate,0),(Immediate,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [6,0,1]
+-- >>> toInstruction [] $ Seq.fromList [6,0,1]
 -- JumpIfFalse (Just ((Position,0),(Position,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [106,0,1]
+-- >>> toInstruction [] $ Seq.fromList [106,0,1]
 -- JumpIfFalse (Just ((Immediate,0),(Position,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1006,0,1]
+-- >>> toInstruction [] $ Seq.fromList [1006,0,1]
 -- JumpIfFalse (Just ((Position,0),(Immediate,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1106,0,1]
+-- >>> toInstruction [] $ Seq.fromList [1106,0,1]
 -- JumpIfFalse (Just ((Immediate,0),(Immediate,1)))
 --
--- >>> toInstruction Nothing $ Seq.fromList [7,0,1,4]
+-- >>> toInstruction [] $ Seq.fromList [7,0,1,4]
 -- LessThan (Just ((Position,0),(Position,1),4))
 --
--- >>> toInstruction Nothing $ Seq.fromList [107,0,1,4]
+-- >>> toInstruction [] $ Seq.fromList [107,0,1,4]
 -- LessThan (Just ((Immediate,0),(Position,1),4))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1007,0,1,4]
+-- >>> toInstruction [] $ Seq.fromList [1007,0,1,4]
 -- LessThan (Just ((Position,0),(Immediate,1),4))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1107,0,1,4]
+-- >>> toInstruction [] $ Seq.fromList [1107,0,1,4]
 -- LessThan (Just ((Immediate,0),(Immediate,1),4))
 --
--- >>> toInstruction Nothing $ Seq.fromList [8,0,0,3]
+-- >>> toInstruction [] $ Seq.fromList [8,0,0,3]
 -- Equals (Just ((Position,0),(Position,0),3))
 --
--- >>> toInstruction Nothing $ Seq.fromList [108,0,0,3]
+-- >>> toInstruction [] $ Seq.fromList [108,0,0,3]
 -- Equals (Just ((Immediate,0),(Position,0),3))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1008,0,0,3]
+-- >>> toInstruction [] $ Seq.fromList [1008,0,0,3]
 -- Equals (Just ((Position,0),(Immediate,0),3))
 --
--- >>> toInstruction Nothing $ Seq.fromList [1108,0,0,3]
+-- >>> toInstruction [] $ Seq.fromList [1108,0,0,3]
 -- Equals (Just ((Immediate,0),(Immediate,0),3))
 --
--- >>> toInstruction Nothing $ Seq.fromList [99]
+-- >>> toInstruction [] $ Seq.fromList [99]
 -- Terminate
 --
--- >>> toInstruction Nothing $ Seq.fromList [100]
+-- >>> toInstruction [] $ Seq.fromList [100]
 -- Error (fromList [100])
-toInstruction :: Maybe Int -> Seq Int -> Instruction
+toInstruction :: [Val] -> Seq Int -> Instruction
 toInstruction _ (extOpCode :<| para1 :<| para2 :<| Empty) =
   case parseExtOpCode extOpCode of
     (JumpIfTrue Nothing, m1 : m2 : _) -> JumpIfTrue $ Just ((m1, para1), (m2, para2))
@@ -255,10 +255,10 @@ toInstruction _ (extOpCode :<| para1 :<| para2 :<| target :<| Empty) =
     (Equals Nothing, m1 : _) -> Equals $ Just ((m1, para1), (Position, para2), target)
     (Equals Nothing, []) -> Equals $ Just ((Position, para1), (Position, para2), target)
     (_, _) -> error $ "invalid opCode " ++ show extOpCode
-toInstruction inputVal (extOpCode :<| para1 :<| Empty) =
-  case (parseExtOpCode extOpCode, inputVal) of
-    ((Save Nothing, _), Just v) -> Save $ Just (para1, v)
-    ((Save Nothing, _), Nothing) -> error "Save: please provide input value; none provided!"
+toInstruction inputVals (extOpCode :<| para1 :<| Empty) =
+  case (parseExtOpCode extOpCode, inputVals) of
+    ((Save Nothing, _), (v : _)) -> Save $ Just (para1, v)
+    ((Save Nothing, _), []) -> error "Save: please provide input value; none provided!"
     ((Print Nothing, m1 : _), _) -> Print $ Just (m1, para1)
     ((Print Nothing, []), _) -> Print $ Just (Position, para1)
 toInstruction _ (99 :<| Empty) = Terminate
@@ -303,64 +303,64 @@ getPosPair xs para1 para2 = (getPos xs para1, getPos xs para2)
 
 -- | Core logic.
 --
--- >>> umbrella Nothing (0, [], Seq.fromList [1,0,0,0,99])
--- (4,[],fromList [2,0,0,0,99])
+-- >>> umbrella ([], 0, [], Seq.fromList [1,0,0,0,99])
+-- ([],4,[],fromList [2,0,0,0,99])
 --
--- >>> umbrella Nothing (0, [], Seq.fromList [2,3,0,3,99])
--- (4,[],fromList [2,3,0,6,99])
+-- >>> umbrella ([], 0, [], Seq.fromList [2,3,0,3,99])
+-- ([],4,[],fromList [2,3,0,6,99])
 --
--- >>> umbrella Nothing (0, [], Seq.fromList [2,4,4,5,99,0])
--- (4,[],fromList [2,4,4,5,99,9801])
+-- >>> umbrella ([], 0, [], Seq.fromList [2,4,4,5,99,0])
+-- ([],4,[],fromList [2,4,4,5,99,9801])
 --
--- >>> umbrella Nothing (0, [], Seq.fromList [1,1,1,4,99,5,6,0,99])
--- (8,[],fromList [30,1,1,4,2,5,6,0,99])
+-- >>> umbrella ([], 0, [], Seq.fromList [1,1,1,4,99,5,6,0,99])
+-- ([],8,[],fromList [30,1,1,4,2,5,6,0,99])
 --
--- >>> umbrella Nothing (0, [], Seq.fromList [1101,100,-1,4,0])
--- (4,[],fromList [1101,100,-1,4,99])
+-- >>> umbrella ([], 0, [], Seq.fromList [1101,100,-1,4,0])
+-- ([],4,[],fromList [1101,100,-1,4,99])
 --
--- >>> umbrella (Just 8) (0, [], Seq.fromList [3,9,8,9,10,9,4,9,99,-1,8])
--- (8,[1],fromList [3,9,8,9,10,9,4,9,99,1,8])
+-- >>> umbrella ([8], 0, [], Seq.fromList [3,9,8,9,10,9,4,9,99,-1,8])
+-- ([],8,[1],fromList [3,9,8,9,10,9,4,9,99,1,8])
 --
--- >>> umbrella (Just 7) (0, [], Seq.fromList [3,9,7,9,10,9,4,9,99,-1,8])
--- (8,[1],fromList [3,9,7,9,10,9,4,9,99,1,8])
+-- >>> umbrella ([7], 0, [], Seq.fromList [3,9,7,9,10,9,4,9,99,-1,8])
+-- ([],8,[1],fromList [3,9,7,9,10,9,4,9,99,1,8])
 --
--- >>> umbrella (Just 8) (0, [], Seq.fromList [3,3,1108,-1,8,3,4,3,99])
--- (8,[1],fromList [3,3,1108,1,8,3,4,3,99])
+-- >>> umbrella ([8], 0, [], Seq.fromList [3,3,1108,-1,8,3,4,3,99])
+-- ([],8,[1],fromList [3,3,1108,1,8,3,4,3,99])
 --
--- >>> umbrella (Just 7) (0, [], Seq.fromList [3,3,1107,-1,8,3,4,3,99])
--- (8,[1],fromList [3,3,1107,1,8,3,4,3,99])
+-- >>> umbrella ([7], 0, [], Seq.fromList [3,3,1107,-1,8,3,4,3,99])
+-- ([],8,[1],fromList [3,3,1107,1,8,3,4,3,99])
 --
--- >>> umbrella (Just 0) (0, [], Seq.fromList [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9])
--- (11,[0],fromList [3,12,6,12,15,1,13,14,13,4,13,99,0,0,1,9])
+-- >>> umbrella ([0], 0, [], Seq.fromList [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9])
+-- ([],11,[0],fromList [3,12,6,12,15,1,13,14,13,4,13,99,0,0,1,9])
 --
--- >>> umbrella (Just 1) (0, [], Seq.fromList [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9])
--- (11,[1],fromList [3,12,6,12,15,1,13,14,13,4,13,99,1,1,1,9])
+-- >>> umbrella ([1], 0, [], Seq.fromList [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9])
+-- ([],11,[1],fromList [3,12,6,12,15,1,13,14,13,4,13,99,1,1,1,9])
 --
--- >>> umbrella (Just 0) (0, [], Seq.fromList [3,3,1105,-1,9,1101,0,0,12,4,12,99,1])
--- (11,[0],fromList [3,3,1105,0,9,1101,0,0,12,4,12,99,0])
+-- >>> umbrella ([0], 0, [], Seq.fromList [3,3,1105,-1,9,1101,0,0,12,4,12,99,1])
+-- ([],11,[0],fromList [3,3,1105,0,9,1101,0,0,12,4,12,99,0])
 --
--- >>> umbrella (Just 1) (0, [], Seq.fromList [3,3,1105,-1,9,1101,0,0,12,4,12,99,1])
--- (11,[1],fromList [3,3,1105,1,9,1101,0,0,12,4,12,99,1])
+-- >>> umbrella ([1],0, [], Seq.fromList [3,3,1105,-1,9,1101,0,0,12,4,12,99,1])
+-- ([],11,[1],fromList [3,3,1105,1,9,1101,0,0,12,4,12,99,1])
 --
--- >>> umbrella (Just 7) (0, [], Seq.fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
--- (46,[999],fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,7,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
+-- >>> umbrella ([7], 0, [], Seq.fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
+-- ([],46,[999],fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,7,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
 --
--- >>> umbrella (Just 8) (0, [], Seq.fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
--- (46,[1000],fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,1000,8,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
+-- >>> umbrella ([8], 0, [], Seq.fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
+-- ([],46,[1000],fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,1000,8,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
 --
--- >>> umbrella (Just 9) (0, [], Seq.fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
--- (46,[1001],fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,1001,9,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
-umbrella :: Maybe Val -> (Int, [Int], Seq Int) -> (Int, [Int], Seq Int)
-umbrella userInput (c, prints, xs) =
-  case nextInstruction userInput (Seq.drop c xs) of
-    Just Terminate -> (c, prints, xs)
+-- >>> umbrella ([9], 0, [], Seq.fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
+-- ([],46,[1001],fromList [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,1001,9,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99])
+umbrella :: ([Val], Int, [Int], Seq Int) -> ([Val], Int, [Int], Seq Int)
+umbrella (inputs, c, prints, xs) =
+  case nextInstruction inputs (Seq.drop c xs) of
+    Just Terminate -> (inputs, c, prints, xs)
     Just (Error (x :<| Empty)) -> error $ "invalid opCode " ++ show x
     Just (Error xs) -> error $ "invalid opCode " ++ show xs
-    Just istr -> umbrella userInput $ execInstruction (c, prints, xs) istr
-    Nothing -> (c, prints, xs)
+    Just istr -> umbrella $ execInstruction (inputs, c, prints, xs) istr
+    Nothing -> (inputs, c, prints, xs)
 
-nextInstruction :: Maybe Val -> Seq Int -> Maybe Instruction
-nextInstruction userInput = seqToMaybe . fmap (toInstruction userInput) . fst . parse . (,) Empty
+nextInstruction :: [Val] -> Seq Int -> Maybe Instruction
+nextInstruction xs = seqToMaybe . fmap (toInstruction xs) . fst . parse . (,) Empty
 
 seqToMaybe :: Seq a -> Maybe a
 seqToMaybe Empty = Nothing
