@@ -61,3 +61,8 @@ main = hspec $
       $ do
         total <- Day6.countOrbits <$> Day6.getInput "inputs/6.txt"
         total `shouldBe` 0
+    describe "Day 6.2"
+      $ it "determines minimum number of orbital transfers to 385"
+      $ do
+        transfers <- Day6.detMinimumTransfers "SAN" "YOU" <$> Day6.getInput "inputs/6.txt"
+        transfers `shouldBe` 385
