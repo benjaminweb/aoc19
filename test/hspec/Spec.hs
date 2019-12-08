@@ -59,8 +59,8 @@ main = hspec $
     describe "Day 6.1"
       $ it "determines the total no. of orbits to 234446"
       $ do
-        total <- Day6.countOrbits <$> Day6.getInput "inputs/6.txt"
-        total `shouldBe` 0
+        total <- Day6.countTotalOrbits <$> Day6.getInput "inputs/6.txt"
+        total `shouldBe` 234446
     describe "Day 6.2"
       $ it "determines minimum number of orbital transfers to 385"
       $ do
